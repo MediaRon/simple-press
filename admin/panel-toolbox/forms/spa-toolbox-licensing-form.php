@@ -1,0 +1,362 @@
+<?php
+/*
+Simple:Press
+Admin Toolbox Licensing Form
+$LastChangedDate: 2018-12-18 11:37:41 -0600 (Tuesday, 18 Dec 2018) $
+$Rev: 15601 $
+*/
+
+if (preg_match('#'.basename(__FILE__).'#', $_SERVER['PHP_SELF'])) die('Access denied - you cannot directly call this file');
+
+function spa_toolbox_licensing_form() {
+	
+	$ajaxURLPlugn = wp_nonce_url(SPAJAXURL.'toolbox-loader&amp;saveform=licensing', 'toolbox-loader');
+	
+	$ajaxURThem = wp_nonce_url(SPAJAXURL.'license-check&amp;saveform=licence_them', 'license-check');
+	
+	$plugins = SP()->plugin->get_list();
+	
+	$themes = SP()->theme->get_list();
+	
+	spa_paint_options_init();
+	spa_paint_open_tab(SP()->primitives->admin_text('Toolbox').' - '.SP()->primitives->admin_text('Licensing'), true);
+	
+	spa_paint_open_panel();
+	spa_paint_open_fieldset(SP()->primitives->admin_text('Plugins Licensing'), true, 'plugins-licensing');
+	
+	foreach ($plugins as $plugin_file => $plugin_data) {
+		
+		$is_active = SP()->plugin->is_active($plugin_file);
+		
+		if ($is_active) {
+			
+			$get_key = SP()->options->get( 'plugin_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
+			
+			$api_data = array(
+				
+			        'version'   => $plugin_data['Version'],   // current version number
+			        'license'   => $get_key,        // license key (used get_option above to retrieve from DB)
+			        'author'    => 'Simple:Press'  // author of this plugin
+		    );
+			
+			if($plugin_data['ItemId'] == ''){
+						
+				$api_data['item_name'] = $plugin_data['Name'];  // name of this plugin
+				
+			}else{
+				
+				$api_data['item_id'] = $plugin_data['ItemId'];  // id of this plugin
+			}
+		
+			$sp_plugin_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $plugin_file, $api_data);
+				
+			$data = array('edd_action' => 'check_license', 'status'=> 1);
+				
+			$check_addons_status = $sp_plugin_updater->check_addons_status($data);
+			
+			if ($check_addons_status && $check_addons_status->license != '') {
+				
+				$license_status = SP()->options->get('spl_plugin_stats_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
+				
+				$license_info 	= SP()->options->get('spl_plugin_info_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
+				
+				$license_info	= json_decode($license_info);
+				
+				$button_id 		= preg_replace('/\s*/', '', $plugin_data['Name']);
+				
+				$button_id 		= strtolower($button_id);
+				
+				$total_days = -1;
+				
+				if(isset($license_info) && $license_info != '' && isset($license_info->expires)){
+					
+					$get_expiredate =  date('Y-m-d', strtotime($license_info->expires));
+					
+					$warn_expiredate = date('Y-m-d', strtotime(' + 3 days'));
+					
+					if($warn_expiredate >= $get_expiredate){
+						
+						$expire_date = date('Y-m-d', strtotime($license_info->expires)); 
+						$today_date = date('Y-m-d');
+						
+						$total_days =  round(($expire_date - $today_date)/(60 * 60 * 24));
+						
+						if($total_days < 0){
+							
+							$total_days = 0;	
+						}
+					}
+				}
+			?>
+				<div class="sffieldset">
+					
+					<div class="plugin_title" style="font-size: 17px;color: #0073aa;font-weight: 600;margin-bottom: 10px;"><?php echo $plugin_data['Name']; ?></div>
+					
+					<form method="post" action="<?php echo $ajaxURLPlugn; ?>" class="plugins_check" name="plugins">
+						
+						<input name="sp_itemn" type="hidden" class="regular-text sp_sample_license_key" value="sp_check_pugin" />
+						
+						<input name="sp_item_name" type="hidden" class="regular-text sp_item_name" value="<?php echo $plugin_data['Name']; ?>" />
+						
+						<input name="sp_item_id" type="hidden" class="regular-text sp_item_id" value="<?php echo $plugin_data['ItemId']; ?>" />
+						
+						<?php settings_fields('sp_sample_license'); ?>
+						
+						<?php echo sp_create_nonce('forum-adminform_housekeeping'); ?>
+						
+						<table class="form-table">
+							<tbody>
+								<tr valign="top">
+									<th scope="row" valign="top" style="width:20%;">
+										<?php _e('License Key'); ?>
+									</th>
+									<td>
+										<input name="sp_sample_license_key" type="text" class="regular-text sp_sample_license_key" value="<?php if($get_key && $get_key != ''){ echo $get_key;} ?>" />
+										<?php if( $license_status !== false && $license_status == 'valid' ) {
+										
+											if($total_days >= 0){
+												
+												echo '<span style="color:green;">License key is active</span>';
+												echo ' <span style="color:red;">( Your License is expire in '.$total_days.' day(s) please renew your license now. )</span>';
+												
+											}elseif($total_days == 'over'){
+												
+												echo ' <span style="color:red;">Your License is expired please renew your license now. </span>';
+												
+											}else{
+												
+												echo '<span style="color:green;">License key is active</span>';
+											}
+										
+										}else {
+											echo '<label class="description" for="sp_sample_license_key">'._e('Enter your license key').'</label>';
+										} ?>
+									</td>
+								</tr>
+								<?php if( $license_status !== false && $license_status == 'valid' && !empty($license_info) ) { ?>
+								<tr>
+									<th valign="top">License Information</th>
+									<td style="font-weight: 600; line-height: 18px;font-size: 12px;">
+										License Limit : <?php echo (isset($license_info->license_limit) && $license_info->license_limit == 0) ? 'Unlimited' : $license_info->license_limit.' Sites'; ?> <br/>
+										Active Site(s) : <?php echo isset($license_info->site_count) ? $license_info->site_count : 'N/A'; ?> <br/>
+										Activations Left Site(s) : <?php echo isset($license_info->activations_left) ? ucfirst($license_info->activations_left) : 'N/A'; ?> <br/>
+										Valid Upto : <?php echo (isset($license_info->expires) && $license_info->expires == 'lifetime') ? 'Lifetime' : date('d M, Y', strtotime($license_info->expires)); ?>
+									</td>
+								</tr>
+								<?php } ?>
+								<tr valign="top">
+									<th scope="row" valign="top" style="border-bottom: 1px solid #ddd;">
+										<?php if( $license_status !== false && $license_status == 'valid' ) { ?>
+											<?php _e('Deactivate License'); ?>
+										<?php } else { ?>
+											<?php _e('Activate License'); ?>
+										<?php } ?>
+									</th>
+									<td>
+										<?php if( $license_status !== false && $license_status == 'valid' ) { ?>
+											<span style="color:green;">Active</span>
+											<input type="submit" class="button-secondary SP_license_deactivate" id="<?php echo $button_id; ?>" name="SP_license_deactivate" value="<?php _e('Deactivate License'); ?>"/>
+										<?php } else { ?>
+											<input type="submit" class="button-secondary SP_license_activate" id="<?php echo $button_id; ?>" name="SP_license_activate" value="<?php _e('Activate License'); ?>"/>
+										<?php } ?>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</form>
+				</div>
+		<?php
+	
+			}
+	
+		}
+	}
+	
+	spa_paint_close_fieldset();
+	spa_paint_close_panel();
+	
+	spa_paint_open_panel();
+	spa_paint_open_fieldset(SP()->primitives->admin_text('Themes Licensing'), true, 'themes-licensing');
+	
+	foreach ($themes as $theme_file => $theme_data) {
+		
+		$get_key = SP()->options->get( 'theme_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
+		
+		$api_data = array(
+			
+	        'version'   => $theme_data['Version'], // current version number
+	        'license'   => $get_key, // license key (used get_option above to retrieve from DB)
+	        'author'    => 'Simple:Press' // author of this plugin
+	    );
+			
+		if($theme_data['ItemId'] == ''){
+						
+			$api_data['item_name'] = $theme_data['Name'];  // name of this plugin
+			
+		}else{
+			
+			$api_data['item_id'] = $theme_data['ItemId'];  // id of this plugin
+		}
+		
+		$sp_theme_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $theme_file, $api_data);
+			
+		$data = array('edd_action' => 'check_license', 'status'=> 1);
+			
+		$check_addons_status = $sp_theme_updater->check_addons_status($data);
+			
+		if ($check_addons_status && $check_addons_status->license != '') {
+			
+			$license_status = SP()->options->get('spl_theme_stats_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
+			
+			$license_info 	= SP()->options->get('spl_theme_info_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
+			
+			$license_info	= json_decode($license_info);
+			
+			$button_id 		= preg_replace('/\s*/', '', $theme_data['Name']);
+			
+			$button_id 		= strtolower($button_id);
+			
+			$total_days = -1;
+			
+			if(isset($license_info) && $license_info != '' && isset($license_info->expires)){
+				
+				$get_expiredate =  date('Y-m-d', strtotime($license_info->expires));
+				
+				$warn_expiredate = date('Y-m-d', strtotime(' + 3 days'));
+				
+				if($warn_expiredate >= $get_expiredate){
+					
+					$expire_date = date('Y-m-d', strtotime($license_info->expires)); 
+					$today_date = date('Y-m-d');
+					
+					$total_days =  round(($expire_date - $today_date)/(60 * 60 * 24));
+					
+					if($total_days < 0){
+						
+						$total_days = 0;	
+					}
+				}
+			}
+	?>
+		<div class="sffieldset">
+			
+			<div class="plugin_title" style="font-size: 17px;color: #0073aa;font-weight: 600;margin-bottom: 10px;"><?php echo $theme_data['Name']; ?></div>
+			
+			<form method="post" action="<?php echo $ajaxURThem; ?>" class="themes_check" name="themes">
+				
+				<input name="sp_itemn" type="hidden" class="regular-text sp_check_theme" value="sp_check_theme" />
+				
+				<input name="sp_item_name" type="hidden" class="regular-text sp_item_name" value="<?php echo $theme_data['Name']; ?>" />
+				
+				<input name="sp_item_id" type="hidden" class="regular-text sp_item_id" value="<?php echo $plugin_data['ItemId']; ?>" />
+				
+				<?php settings_fields('sp_sample_license'); ?>
+				
+				<table class="form-table">
+					<tbody>
+						<tr valign="top">
+							<th scope="row" valign="top" style="width:20%;">
+								<?php _e('License Key'); ?>
+							</th>
+							<td>
+								<input name="sp_sample_license_key" type="text" class="regular-text sp_sample_license_key" value="<?php if($get_key && $get_key != ''){ echo $get_key;} ?>" />
+								<?php if( $license_status !== false && $license_status == 'valid' ) {
+									
+									if($total_days >= 0){
+										
+										echo '<span style="color:green;">License key is active</span>';
+										echo ' <span style="color:red;">Your License is expire in '.$total_days.' days please renew your license now.</span>';
+										
+									}elseif($total_days == 'over'){
+										
+										echo ' <span style="color:red;">Your License is expired please renew your license now. </span>';
+										
+									}else{
+										
+										echo '<span style="color:green;">License key is active</span>';
+									}
+								
+								}else {
+									echo '<label class="description" for="sp_sample_license_key">'._e('Enter your license key').'</label>';
+								} ?>
+							</td>
+						</tr>
+						<?php if( $license_status !== false && $license_status == 'valid' && !empty($license_info) ) { ?>
+						<tr>
+							<th valign="top">License Information</th>
+							<td style="font-weight: 600; line-height: 18px;font-size: 12px;">
+								License Limit : <?php echo (isset($license_info->license_limit) && $license_info->license_limit == 0) ? 'Unlimited' : $license_info->license_limit.' Sites'; ?> <br/>
+								Active Site(s) : <?php echo isset($license_info->site_count) ? $license_info->site_count : 'N/A'; ?> <br/>
+								Activations Left Site(s) : <?php echo isset($license_info->activations_left) ? ucfirst($license_info->activations_left) : 'N/A'; ?> <br/>
+								Valid Upto : <?php echo (isset($license_info->expires) && $license_info->expires == 'lifetime') ? 'Lifetime' : date('d M, Y', strtotime($license_info->expires)); ?>
+							</td>
+						</tr>
+						<?php } ?>
+						<tr valign="top">
+							<th scope="row" valign="top" style="border-bottom: 1px solid #ddd;">
+								<?php if( $license_status !== false && $license_status == 'valid' ) { ?>
+									<?php _e('Deactivate License'); ?>
+								<?php } else { ?>
+									<?php _e('Activate License'); ?>
+								<?php } ?>
+							</th>
+							<td>
+								<?php if( $license_status !== false && $license_status == 'valid' ) { ?>
+									<span style="color:green;">Active</span>
+									<input type="submit" class="button-secondary" id="<?php echo $button_id; ?>" name="SP_license_deactivate" value="<?php _e('Deactivate License'); ?>"/>
+								<?php } else {
+									?>
+									<input type="submit" class="button-secondary" id="<?php echo $button_id; ?>" name="SP_license_activate" value="<?php _e('Activate License'); ?>"/>
+								<?php } ?>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</form>
+		</div>
+	<?php
+	
+		}
+	}
+	
+	spa_paint_close_fieldset();
+	spa_paint_close_panel();
+	
+	spa_paint_open_panel();
+	spa_paint_open_fieldset(SP()->primitives->admin_text('Steps to Activate the License'), false);
+	
+	$sp_addon_store_url = SP()->options->get( 'sp_addon_store_url');
+	
+	echo '<form class="url_global" style="margin:0px 0px 30px 0px;">';
+	echo '<table class="form-table">';
+	echo '<tr valign="top">';
+	echo '<th scope="row" style="width:20%;border-bottom: 1px solid #ddd;" valign="top">Add Main PLugins Site URL:</th>';
+	echo '<td><input name="sp_sample_store_url" type="text" class="regular-text sp_sample_store_url" value="'.$sp_addon_store_url.'"></td>';
+	echo '</tr>';
+	echo '</table>';
+	echo '<div class="sfform-submit-bar">
+	<input type="submit" class="button-primary" id="saveit" name="save_store_url" value="Update Option">
+	</div>';
+	echo '</form>';
+	echo '<div class="sfoptionerror" style="margin-left: 0px;">Note: If you do not activate the license then you will not get automatic update of this plugin any more.</div>';
+	
+	echo '<ul class="licensing_note_list">';
+	echo '<li><strong>Step 1:</strong> Enter your license key into &#39;License Key&#39; field and press &#39;Save Changes&#39; button.</li>';
+	echo '<li><strong>Step 2:</strong> After save changes you can see an another button named &#39;Activate License&#39;.</li>';
+	echo '<li><strong>Step 3:</strong> Press &#39;Activate License&#39;. If your key is valid then you can see green &#39;Active&#39; text.</li>';
+	echo '<li><strong>Step 4:</strong> Thats it. Now you can get auto update of this plugin.</li>';
+	echo '</ul>';
+	
+	echo 'Note : If your license key has expired, please renew your license from Account Page.';
+	
+	spa_paint_close_fieldset();
+	spa_paint_close_panel();
+	
+	spa_paint_close_container();
+	
+	echo '<div class="sfform-panel-spacer"></div>';
+	
+	spa_paint_close_tab();
+	
+	}
+?>

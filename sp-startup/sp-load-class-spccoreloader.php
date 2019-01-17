@@ -305,8 +305,6 @@ class spcCoreLoader {
 		add_filter('registration_errors', array(SP()->user, 'validate_registration'), 10, 3);
 		add_action('user_profile_update_errors', array(SP()->user, 'validate_display_name'), 10, 3);
 
-		add_action('wp_update_plugins', 'sp_check_for_updates');
-
 		# debug stuff
 		add_action('admin_head', 'spdebug_admindev');
 		add_action('wp_head', 'spdebug_styles');

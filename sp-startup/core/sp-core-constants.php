@@ -143,3 +143,12 @@ if (!defined('SPADMINTOOLBOX')) define('SPADMINTOOLBOX', admin_url('admin.php?pa
 if (!defined('SPADMINPLUGINS')) define('SPADMINPLUGINS', admin_url('admin.php?page='.SP_FOLDER_NAME.'/admin/panel-plugins/spa-plugins.php'));
 if (!defined('SPADMINTHEMES')) define('SPADMINTHEMES', admin_url('admin.php?page='.SP_FOLDER_NAME.'/admin/panel-themes/spa-themes.php'));
 if (!defined('SPADMININTEGRATION')) define('SPADMININTEGRATION', admin_url('admin.php?page='.SP_FOLDER_NAME.'/admin/panel-integration/spa-integration.php'));
+
+$sp_addon_store_url = SP()->options->get( 'sp_addon_store_url');
+
+if($sp_addon_store_url == ''){
+	
+	$sp_addon_store_url = 'https://simple-press.com/';
+}
+
+if (!defined('SP_Addon_STORE_URL')) define('SP_Addon_STORE_URL', $sp_addon_store_url);

@@ -48,7 +48,8 @@ class spcTheme {
 	 * @returns    array   theme header info
 	 */
 	public function get_data($theme_file) {
-		$default_headers = array('Name'        => 'Simple:Press Theme Title',
+		$default_headers = array('Name'       => 'Simple:Press Theme Title',
+								 'ItemId'      => 'Item Id',
 		                         'ThemeURI'    => 'Theme URI',
 		                         'Version'     => 'Version',
 		                         'Description' => 'Description',
@@ -71,7 +72,12 @@ class spcTheme {
 		$theme_data['Version']     = wp_kses($theme_data['Version'], $allowedtags);
 		$theme_data['Description'] = wp_kses($theme_data['Description'], $allowedtags);
 		$theme_data['Author']      = wp_kses($theme_data['Author'], $allowedtags);
-
+		
+		if($theme_data['ItemId'] && $theme_data['ItemId'] != ''){
+			
+			$theme_data['ItemId']        = wp_kses($theme_data['ItemId'], $allowedtags);
+		}
+		
 		return $theme_data;
 	}
 

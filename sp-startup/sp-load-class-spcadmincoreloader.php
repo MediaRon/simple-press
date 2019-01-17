@@ -136,13 +136,11 @@ class spcAdminCoreLoader {
 		# check sp version for upgrades
 		if (is_main_site()) {
 			# sp plugin checks
-			add_action('core_upgrade_preamble', 'sp_update_check_sp_plugins');
 			add_action('update-core-custom_do-sp-plugin-upgrade', 'sp_update_plugins');
 			add_action('update-custom_update-sp-plugins', 'sp_do_plugins_update');
 			add_action('update-custom_upload-sp-plugin', 'sp_do_plugin_upload');
 
 			# sp theme checks
-			add_action('core_upgrade_preamble', 'sp_update_check_sp_themes');
 			add_action('update-core-custom_do-sp-theme-upgrade', 'sp_update_themes');
 			add_action('update-custom_update-sp-themes', 'sp_do_themes_update');
 			add_action('update-custom_upload-sp-theme', 'sp_do_theme_upload');
@@ -170,9 +168,22 @@ class spcAdminCoreLoader {
 
 		# fire action to indicate hooks complete
 		do_action('sph_admin_core_hooks_complete');
+		
+		# fire action for edd update and license check function
+		
+		add_action('wp_dashboard_setup', 'spa_dashboard_addon_news_setup', 1);
+		
+		add_action('plugins_loaded', 'sp_check_addons_status');
+		
+		add_action('wp_update_plugins', 'check_for_sp_addons_updates');
+		
+		add_action('core_upgrade_preamble', 'check_for_plugin_addon_update' );
+		
+		add_action('core_upgrade_preamble', 'check_for_theme_addon_update' );
 	}
 
 	public function check_wp_plugin_page() {
+		
 		$screen = get_current_screen();
 		if ($screen->id == 'plugins') {
 			wp_enqueue_script('jquery-ui-core');

@@ -443,7 +443,9 @@ function spa_dashboard_setup() {
  * @return string
  */
 function spa_check_for_news() {
+	
 	$news = SP()->meta->get('news', 'news');
+		
 	if (!empty($news)) {
 		if ($news[0]['meta_value']['show']) return $news[0]['meta_value']['news'];
 	}
@@ -534,6 +536,8 @@ function spa_dashboard_forum() {
  */
 function spa_dashboard_news() {
 	global $spNews;
+	$sp_update_plugins = get_site_transient('sp_update_plugins');
+	$sp_update_themes = get_site_transient('sp_update_themes');
 	?>
     <style>
         #spa_dashboard_news h4 {
@@ -550,6 +554,21 @@ function spa_dashboard_news() {
             margin: 6px 0 0 0;
             font-size: 14px;
         }
+        
+         #spa_dashboard_news .spa_dashboard_text h3 {
+        	
+        	font-weight: bold;
+        }
+        
+        #update-plugins-table{
+        	
+        	margin: 10px 0px;
+        }
+        
+        #update-themes-table{
+        	
+        	margin: 10px 0px 0px;
+        }
 
         ;
     </style>
@@ -562,10 +581,15 @@ function spa_dashboard_news() {
 	echo '</div>';
 	echo '<div class="spa_dashboard_text">';
 	echo SP()->displayFilters->text($spNews);
+	sp_plugin_addon_dashboard_update();
+	sp_theme_addon_dashboard_update();
 	echo '</div>';
 	echo '<div style="clear:both;"></div>';
 	echo '<div style="border-top:1px solid #666;margin-top:18px;padding:10px 0;">';
 	$site = wp_nonce_url(SPAJAXURL.'remove-news&amp;targetaction=news', 'remove-news');
+	if(!empty($sp_update_plugins) || !empty($sp_update_themes)){
+		echo '<a href="'.self_admin_url('update-core.php').'"><input type="button" value="'.SP()->primitives->admin_text('Go to Update page').'" class="button-primary" /></a> &nbsp; &nbsp;';	
+	}
 	echo '<input type="button" value="'.SP()->primitives->admin_text('Remove News Item').'" class="button-primary" onclick="spj.removeNews(\''.$site.'\')"/>';
 	echo '</div>';
 	echo '</div>';
@@ -593,4 +617,474 @@ function spa_remove_news() {
 		}(window.spj = window.spj || {}, jQuery));
     </script>
 	<?php
+}
+
+
+/**
+ * This function determines if there is an update available to the core Simple Press plugin and themes.
+ *
+ */
+ 
+
+if ( ! function_exists( 'object_sp_plugin' ) ) {
+	
+	function object_sp_plugin($plugin_file, $plugin_data){
+		
+		$get_key = SP()->options->get( 'plugin_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
+			
+		$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['plugins']).'/'.strtok(plugin_basename($plugin_file), '/');
+		
+		$api_data = array(
+			
+	        'version'   => $plugin_data['Version'],   // current version number
+	        'license'   => $get_key,        // license key (used get_option above to retrieve from DB)
+	        'author'    => $plugin_data['Author'],  // author of this plugin
+	        'API_action' => 'get_version' // api action
+	    );
+		
+		if($plugin_data['ItemId'] == ''){
+			
+			$api_data['item_name'] = $plugin_data['Name'];  // name of this plugin
+			
+		}else{
+			
+			$api_data['item_id'] = $plugin_data['ItemId'];  // id of this plugin
+		}
+		
+		$sp_plugin_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $this_path, $api_data);
+		
+		return $sp_plugin_updater;
+	}
+}
+
+if ( ! function_exists( 'object_sp_theme' ) ) {
+	
+	
+	function object_sp_theme($theme_file, $theme_data){
+		
+		$get_key = SP()->options->get( 'theme_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
+		
+		$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['themes']).'/'.$theme_file;
+
+		$api_data = array(
+		
+	        'version'   => $theme_data['Version'],   // current version number
+	        'license'   => $get_key,        // license key (used get_option above to retrieve from DB)
+	        'author'    => 'Simple:Press',  // author of this plugin
+	        'API_action' => 'get_version' // action api
+	    );
+		
+		if($theme_data['ItemId'] == ''){
+			
+			$api_data['item_name'] = $theme_data['Name'];  // name of this plugin
+			
+		}else{
+			
+			$api_data['item_id'] = $theme_data['ItemId'];  // id of this plugin
+		}
+		
+		$sp_theme_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $this_path, $api_data);
+		
+		return $sp_theme_updater;
+	}
+}
+
+
+function sp_check_addons_status(){
+	
+	$plugins = SP()->plugin->get_list();
+	
+	if (!empty($plugins)) {
+		
+		foreach ($plugins as $plugin_file => $plugin_data) {
+			
+			$sp_plugin_updater = object_sp_plugin($plugin_file, $plugin_data);
+			
+			$update_status_option 	= 'spl_plugin_stats_'.str_replace(' ', '-', strtolower($plugin_data['Name']));
+			
+			$update_info_option 	= 'spl_plugin_info_'.str_replace(' ', '-', strtolower($plugin_data['Name']));
+			
+			$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option);
+			
+			$sp_plugin_updater->check_addons_status($data);
+		}
+	
+	}
+	
+	$themes = SP()->theme->get_list();
+	
+	if (!empty($themes)) {
+		
+		foreach ($themes as $theme_file => $theme_data) {
+			
+			$sp_theme_updater = object_sp_theme($theme_file, $theme_data);
+			
+			$update_status_option 	= 'spl_theme_stats_'.str_replace(' ', '-', strtolower($theme_data['Name']));
+			
+			$update_info_option 	= 'spl_theme_info_'.str_replace(' ', '-', strtolower($theme_data['Name']));
+			
+			$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option);
+			
+			$sp_theme_updater->check_addons_status($data);
+		}
+	
+	}
+}
+
+
+/**
+ * This function determines if there is an update available to the core Simple Press plugins and notify to admin.
+ *
+ */
+function check_for_sp_addons_updates() {
+	
+	$plugins = SP()->plugin->get_list();
+	
+	$update = false;
+	
+	foreach ($plugins as $plugin_file => $plugin_data) {
+		
+		if (!empty($plugins)) {
+			
+			$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['plugins']).'/'.strtok(plugin_basename($plugin_file), '/');
+			
+			$up = new stdClass;
+			
+			$sp_plugin_updater = object_sp_plugin($plugin_file, $plugin_data);
+			
+			$check_for_addon_update = $sp_plugin_updater->check_for_addon_update();
+			
+			if ((version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1)) {
+				
+				$data = new stdClass;
+				$data->slug = $plugin_file;
+				$data->new_version = (string) $check_for_addon_update->new_version;
+				$data->url = SP_Addon_STORE_URL;
+				$data->package = $check_for_addon_update->package;
+				$up->response[$plugin_file] = $data;
+				$update = true;
+			}
+		}
+	}
+
+	if ($update) {
+		set_site_transient('sp_update_plugins', $up);
+	} else {
+		delete_site_transient('sp_update_plugins');
+	}
+	
+	$update = false;
+	$themes = SP()->theme->get_list();
+	
+	foreach ($themes as $theme_file => $theme_data) {
+		
+		if (!empty($themes)) {
+			
+			$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['themes']).'/'.$theme_file;
+				
+			$sp_theme_updater = object_sp_theme($theme_file, $theme_data);
+			
+			$check_for_addon_update = $sp_theme_updater->check_for_addon_update();
+			
+			if ((version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1)) {
+				
+				$data = new stdClass;
+				$data->slug = $plugin_file;
+				$data->new_version = (string) $check_for_addon_update->new_version;
+				$data->url = SP_Addon_STORE_URL;
+				$data->package = $check_for_addon_update->package;
+				$up->response[$plugin_file] = $data;
+				$update = true;
+			}
+		}
+	}
+
+	if ($update) {
+		set_site_transient('sp_update_themes', $up);
+	} else {
+		delete_site_transient('sp_update_themes');
+	}
+	
+}
+
+/**
+ * This function determines if there is an update available to the core Simple Press themes and notify to admin.
+ *
+ */
+
+function sp_plugin_addon_dashboard_update()
+{
+	
+	$plugins = SP()->plugin->get_list();
+	$header = true;
+	
+	foreach ($plugins as $plugin_file => $plugin_data) {
+		
+		if (!empty($plugins)) {
+		
+			$sp_plugin_updater = object_sp_plugin($plugin_file, $plugin_data);
+			
+			$check_for_addon_update = $sp_plugin_updater->check_for_addon_update();
+			
+			$data = array('edd_action' => 'check_license', 'status'=> 1);
+			
+			$check_addons_status = $sp_plugin_updater->check_addons_status($data);
+			
+			if ($check_for_addon_update && (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1) && $check_addons_status->success != '' && $check_addons_status->license != 'expired') {
+				
+				if ($header) {
+					
+					?>
+					<h3 style="margin: 10px 0px 0px 0px;"><?php SP()->primitives->admin_etext('Simple:Press Plugins'); ?></h3>
+					<p><?php SP()->primitives->admin_etext('The following plugins have new versions available.'); ?></p>
+						<table class="widefat" id="update-plugins-table">
+							<tbody class="plugins">
+								<?php
+								$header = false;
+				}
+				echo "
+				<tr class='active'>
+				<td><strong>{$plugin_data['Name']}</strong><br />".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $plugin_data['Version'], $check_for_addon_update->new_version, SPVERSION).'</td>
+				</tr>';
+			}
+		
+		}
+		
+	}
+
+	if (!$header) {
+			?>
+		</tbody>
+	</table>
+	<?php
+	}
+}
+
+function sp_theme_addon_dashboard_update()
+{
+	$themes = SP()->theme->get_list();
+	$header = true;
+	
+	foreach ($themes as $theme_file => $theme_data) {
+		
+		if (!empty($themes)) {
+			
+			$sp_theme_updater = object_sp_theme($theme_file, $theme_data);
+			
+			$check_for_addon_update = $sp_theme_updater->check_for_addon_update();
+			
+			$data = array('edd_action' => 'check_license', 'status'=> 1);
+			
+			$check_addons_status = $sp_theme_updater->check_addons_status($data);
+			
+			if ($check_for_addon_update && (version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1) && $check_addons_status->success != '' && $check_addons_status->license != 'expired') {
+			
+				if ($header) {
+					?>
+					<h3><?php SP()->primitives->admin_etext('Simple:Press Themes'); ?></h3>
+					<p><?php SP()->primitives->admin_etext('The following themes have new versions available.'); ?></p>
+						<table class="widefat" id="update-themes-table">
+							<tbody class="plugins">
+								<?php
+								$header = false;
+				}
+				$screenshot = SPTHEMEBASEURL.$theme_file.'/'.$theme_data['Screenshot'];
+				echo "
+					<tr class='active'>
+					<td class='plugin-title'><strong>{$theme_data['Name']}</strong>".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $theme_data['Version'], $check_for_addon_update->new_version, SPVERSION)."</td>
+					</tr>";
+			}
+
+		}
+	}
+
+	if (!$header) { ?>
+		
+			</tbody>
+		</table>
+	<?php
+		
+	}
+}
+
+/**
+ * This function determines if there is an update available to the core Simple Press themes and notify to admin.
+ *
+ */
+
+function check_for_plugin_addon_update() {
+	
+	$plugins = SP()->plugin->get_list();
+	$header = true;
+	$update = false;
+	$up = new stdClass;
+	
+	foreach ($plugins as $plugin_file => $plugin_data) {
+		
+		if (!empty($plugins)) {
+			
+			$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['plugins']).'/'.strtok(plugin_basename($plugin_file), '/');
+			
+			$sp_plugin_updater = object_sp_plugin($plugin_file, $plugin_data);
+			
+			$check_for_addon_update = $sp_plugin_updater->check_for_addon_update();
+			
+			$data = array('edd_action' => 'check_license', 'status'=> 1);
+			
+			$check_addons_status = $sp_plugin_updater->check_addons_status($data);
+			
+			if ((version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1) && $check_addons_status->success != '' && $check_addons_status->license != 'expired') {
+				
+				if ($header) {
+					
+					$form_action = 'update-core.php?action=do-sp-plugin-upgrade';
+					?>
+					<h3><?php SP()->primitives->admin_etext('Simple:Press Plugins'); ?></h3>
+					<p><?php SP()->primitives->admin_etext('The following plugins have new versions available. Check the ones you want to update and then click Update SP Plugin'); ?></p>
+					<p><?php SP()->primitives->admin_etext('Please Note: Any customizations you have made to plugin files will be lost'); ?></p>
+					<form method="post" action="<?php echo $form_action; ?>" name="upgrade-sp-plugins" class="upgrade">
+						<?php wp_nonce_field('upgrade-core'); ?>
+						<p><input id="upgrade-themes" class="button" type="submit" value="<?php SP()->primitives->admin_etext('Update SP Plugins'); ?>" name="upgrade" /></p>
+						<table class="widefat" id="update-plugins-table">
+							<thead>
+								<tr>
+									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all" /></th>
+									<th scope="col" class="manage-column"><label for="themes-select-all"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+								</tr>
+							</thead>
+							<tfoot>
+								<tr>
+									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-2" /></th>
+									<th scope="col" class="manage-column"><label for="themes-select-all-2"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+								</tr>
+							</tfoot>
+							<tbody class="plugins">
+								<?php
+								$header = false;
+				}
+				echo "
+				<tr class='active'>
+				<th scope='row' class='check-column'><input type='checkbox' name='checked[]' value='".esc_attr($plugin_file)."' /></th>
+				<td><strong>{$plugin_data['Name']}</strong><br />".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $plugin_data['Version'], $check_for_addon_update->new_version, SPVERSION).'</td>
+				</tr>';
+				$data = new stdClass;
+				$data->slug = $plugin_file;
+				$data->new_version = (string) $check_for_addon_update->new_version;
+				$data->url = SP_Addon_STORE_URL;
+				$data->package = $check_for_addon_update->package;
+				$up->response[$plugin_file] = $data;
+				$update = true;
+			}
+		
+		}
+		
+	}
+	
+	# any plugins to update?
+	if ($update) {
+		set_site_transient('sp_update_plugins', $up);
+	} else {
+		delete_site_transient('sp_update_plugins');
+	}
+
+	if (!$header) {
+			?>
+		</tbody>
+	</table>
+	<p><input id="upgrade-themes-2" class="button" type="submit" value="<?php SP()->primitives->admin_etext('Update SP Plugins'); ?>" name="upgrade" /></p>
+	</form>
+	<?php
+	} else {
+		echo '<h3>'.SP()->primitives->admin_text('Simple:Press Plugins').'</h3>';
+		echo '<p>'.SP()->primitives->admin_text('Your SP plugins are all up to date').'</p>';
+	}
+}
+
+function check_for_theme_addon_update(){
+	
+	$themes = SP()->theme->get_list();
+	$header = true;
+	$update = false;
+	$up = new stdClass;
+	
+	foreach ($themes as $theme_file => $theme_data) {
+		
+		if (!empty($themes)) {
+			
+			$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['themes']).'/'.$theme_file;
+			
+			$sp_theme_updater = object_sp_theme($theme_file, $theme_data);
+			
+			$check_for_addon_update = $sp_theme_updater->check_for_addon_update();
+			
+			$data = array('edd_action' => 'check_license', 'status'=> 1);
+		
+			$check_addons_status = $sp_theme_updater->check_addons_status($data);
+			
+			if ((version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1) && $check_addons_status->success != '' && $check_addons_status->license != 'expired') {
+			
+				if ($header) {
+					$form_action = 'update-core.php?action=do-sp-theme-upgrade';
+					?>
+					<h3><?php SP()->primitives->admin_etext('Simple:Press Themes'); ?></h3>
+					<p><?php SP()->primitives->admin_etext('The following themes have new versions available. Check the ones you want to update and then click Update Themes.'); ?></p>
+					<p><?php echo '<b>'.SP()->primitives->admin_text('Please Note:').'</b> '.SP()->primitives->admin_text('Any customizations you have made to theme files will be lost.'); ?></p>
+					<form method="post" action="<?php echo $form_action; ?>" name="upgrade-themes" class="upgrade">
+						<?php wp_nonce_field('upgrade-core'); ?>
+						<p><input id="upgrade-themes" class="button" type="submit" value="<?php SP()->primitives->admin_etext('Update SP Themes'); ?>" name="upgrade" /></p>
+						<table class="widefat" id="update-themes-table">
+							<thead>
+								<tr>
+									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all" /></th>
+									<th scope="col" class="manage-column"><label for="themes-select-all"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+								</tr>
+							</thead>
+							<tfoot>
+								<tr>
+									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-2" /></th>
+									<th scope="col" class="manage-column"><label for="themes-select-all-2"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+								</tr>
+							</tfoot>
+							<tbody class="plugins">
+								<?php
+								$header = false;
+				}
+				$screenshot = SPTHEMEBASEURL.$theme_file.'/'.$theme_data['Screenshot'];
+				echo "
+					<tr class='active'>
+					<th scope='row' class='check-column'><input type='checkbox' name='checked[]' value='".esc_attr($theme_file)."' /></th>
+					<td class='plugin-title'><img src='$screenshot' width='64' height='64' style='float:left; padding: 5px' /><strong>{$theme_data['Name']}</strong>".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $theme_data['Version'], $check_for_addon_update->new_version, SPVERSION)."</td>
+					</tr>";
+				$data = new stdClass;
+				$data->slug = $theme_file;
+				$data->stylesheet = $theme_data['Stylesheet'];
+				$data->new_version = (string) $check_for_addon_update->new_version;
+				$data->url = SP_Addon_STORE_URL;
+				$data->package = $check_for_addon_update->package;
+				$up->response[$theme_file] = $data;
+				$update = true;
+			}
+
+		}	
+	}
+
+	# any themes to update?
+	if ($update) {
+		set_site_transient('sp_update_themes', $up);
+	} else {
+		delete_site_transient('sp_update_themes');
+	}
+
+	if (!$header) { ?>
+		
+			</tbody>
+		</table>
+		<p><input id="upgrade-themes-2" class="button" type="submit" value="<?php SP()->primitives->admin_etext('Update SP Themes'); ?>" name="upgrade" /></p>
+	</form>
+	<?php
+		
+	} else {
+		echo '<h3>'.SP()->primitives->admin_text('Simple:Press Themes').'</h3>';
+		echo '<p>'.SP()->primitives->admin_text('Your SP themes are all up to date').'</p>';
+	}
 }

@@ -376,6 +376,8 @@ function spa_setup_admin_menu() {
 	$forms = array(
 		SP()->primitives->admin_text('Toolbox')			 => array(
 			'toolbox' => ''),
+		SP()->primitives->admin_text('Licensing')		 => array(
+			'licensing' => ''),
 		SP()->primitives->admin_text('Housekeeping')	 => array(
 			'housekeeping' => 'sfreloadhk'),
 		SP()->primitives->admin_text('Data Inspector')	 => array(

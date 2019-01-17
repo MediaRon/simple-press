@@ -66,6 +66,11 @@ function spa_render_toolbox_container($formid) {
 			require_once SP_PLUGIN_DIR.'/admin/panel-toolbox/forms/spa-toolbox-changelog-form.php';
 			spa_toolbox_changelog_form();
 			break;
+			
+		case 'licensing':
+			require_once SP_PLUGIN_DIR.'/admin/panel-toolbox/forms/spa-toolbox-licensing-form.php';
+			spa_toolbox_licensing_form();
+			break;
 
 		case 'uninstall':
 			require_once SP_PLUGIN_DIR.'/admin/panel-toolbox/forms/spa-toolbox-uninstall-form.php';
