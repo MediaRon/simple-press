@@ -129,6 +129,20 @@ class SPPluginUpdater {
 			
 		}else{
 			
+			
+			$check_version = $this->check_for_addon_update();
+			
+			$update_version_option = array(
+				'new_version'=> isset( $check_version->new_version ) ? $check_version->new_version : '',
+				'stable_version'=> isset( $check_version->stable_version ) ? $check_version->stable_version : '',
+				'name'=>isset( $check_version->name ) ? $check_version->name : '',
+				'slug'=>isset( $check_version->slug ) ? $check_version->slug : '',
+				'url'=>isset( $check_version->url ) ? $check_version->url : '',
+				'last_updated'=>isset( $check_version->last_updated ) ? $check_version->last_updated : '',
+				'download_link'=>isset( $check_version->download_link ) ? $check_version->download_link : '',
+				'icons'=>isset( $check_version->icons ) ? $check_version->icons : ''
+				);
+			
 			if(isset($license_data->license)) {
 			
 				if( $license_data->license == 'expired' ) {
@@ -139,6 +153,9 @@ class SPPluginUpdater {
 					// delete info from option table
 					SP()->options->delete( $data['update_info_option'] );
 					
+					// delete update_version_option from option table
+					SP()->options->delete( $data['update_version_option'] );
+					
 				}else{
 					
 					// save status to option table
@@ -146,6 +163,9 @@ class SPPluginUpdater {
 					
 					// save info to option table
 					SP()->options->update( $data['update_info_option'], wp_remote_retrieve_body( $response ) );
+					
+					// save update_version_option to option table
+					SP()->options->update( $data['update_version_option'], json_encode($update_version_option) );
 				}
 			}
 		}

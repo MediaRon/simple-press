@@ -32,39 +32,17 @@ function spa_toolbox_licensing_form() {
 			
 			$get_key = SP()->options->get( 'plugin_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
 			
-			$api_data = array(
+			$license_status = SP()->options->get('spl_plugin_stats_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
 				
-			        'version'   => $plugin_data['Version'],   // current version number
-			        'license'   => $get_key,        // license key (used get_option above to retrieve from DB)
-			        'author'    => 'Simple:Press'  // author of this plugin
-		    );
+			$license_info 	= SP()->options->get('spl_plugin_info_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
+				
+			$license_info	= json_decode($license_info);
 			
-			if($plugin_data['ItemId'] == ''){
-						
-				$api_data['item_name'] = $plugin_data['Name'];  // name of this plugin
+			if ($license_info && $license_info->license != '') {
 				
-			}else{
+				$button_id 	= preg_replace('/\s*/', '', $plugin_data['Name']);
 				
-				$api_data['item_id'] = $plugin_data['ItemId'];  // id of this plugin
-			}
-		
-			$sp_plugin_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $plugin_file, $api_data);
-				
-			$data = array('edd_action' => 'check_license', 'status'=> 1);
-				
-			$check_addons_status = $sp_plugin_updater->check_addons_status($data);
-			
-			if ($check_addons_status && $check_addons_status->license != '') {
-				
-				$license_status = SP()->options->get('spl_plugin_stats_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
-				
-				$license_info 	= SP()->options->get('spl_plugin_info_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
-				
-				$license_info	= json_decode($license_info);
-				
-				$button_id 		= preg_replace('/\s*/', '', $plugin_data['Name']);
-				
-				$button_id 		= strtolower($button_id);
+				$button_id 	= strtolower($button_id);
 				
 				$total_days = -1;
 				
@@ -182,40 +160,15 @@ function spa_toolbox_licensing_form() {
 		
 		$get_key = SP()->options->get( 'theme_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
 		
-		$api_data = array(
-			
-	        'version'   => $theme_data['Version'], // current version number
-	        'license'   => $get_key, // license key (used get_option above to retrieve from DB)
-	        'author'    => 'Simple:Press' // author of this plugin
-	    );
-			
-		if($theme_data['ItemId'] == ''){
-						
-			$api_data['item_name'] = $theme_data['Name'];  // name of this plugin
-			
-		}else{
-			
-			$api_data['item_id'] = $theme_data['ItemId'];  // id of this plugin
-		}
+		$license_status = SP()->options->get('spl_theme_stats_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
 		
-		$sp_theme_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $theme_file, $api_data);
+		$license_info 	= SP()->options->get('spl_theme_info_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
+		$license_info	= json_decode($license_info);
 			
-		$data = array('edd_action' => 'check_license', 'status'=> 1);
-			
-		$check_addons_status = $sp_theme_updater->check_addons_status($data);
-			
-		if ($check_addons_status && $check_addons_status->license != '') {
-			
-			$license_status = SP()->options->get('spl_theme_stats_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
-			
-			$license_info 	= SP()->options->get('spl_theme_info_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
-			
-			$license_info	= json_decode($license_info);
+		if ($license_info && $license_info->license != '') {
 			
 			$button_id 		= preg_replace('/\s*/', '', $theme_data['Name']);
-			
 			$button_id 		= strtolower($button_id);
-			
 			$total_days = -1;
 			
 			if(isset($license_info) && $license_info != '' && isset($license_info->expires)){

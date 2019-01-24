@@ -50,21 +50,6 @@ function spa_plugins_list_form() {
     # get plugins
 	$plugins = spa_get_plugins_list_data();
 
-	# get update version info
-	$xml = sp_load_version_xml();
-
-    # get versions of our plugins
-    $versions = array();
-    $required = array();
-    $folders = array();
-    if ($xml) {
-        foreach ($xml->plugins->plugin as $plugin) {
-        	$versions[(string) $plugin->name] = (string) $plugin->version;
-        	$required[(string) $plugin->name] = (string) $plugin->requires;
-        	$folders[(string) $plugin->name] = (string) $plugin->folder;
-        }
-    }
-
     # check active plugins
     $invalid = SP()->plugin->validate_active();
     if (!empty($invalid)) {
@@ -129,7 +114,6 @@ function spa_plugins_list_form() {
 		$disabled = '';
 
     	foreach ((array) $plugins as $plugin_file => $plugin_data) {
-            $update = (!empty($versions[$plugin_data['Name']])) ? ((version_compare($versions[$plugin_data['Name']], $plugin_data['Version'], '>') == 1)) : 0;
 
 			# check for valid folder name
 			$path = explode('/', $plugin_file);
@@ -143,7 +127,6 @@ function spa_plugins_list_form() {
 				$actionlink = apply_filters('sph_plugins_active_buttons', $actionlink, $plugin_file);
 				$actionlink.= sp_paint_plugin_tip($plugin_data['Name'], $plugin_file);
 				$rowClass = 'active';
-                if ($update) $rowClass.= ' update';
                 $icon = '<img src="'.SPADMINIMAGES.'sp_Yes.png" title="'.SP()->primitives->admin_text('Plugin activated').'" alt="" style="vertical-align:middle;" />';
             } else {
 				if ($bad) {
@@ -210,34 +193,13 @@ function spa_plugins_list_form() {
         	
         	<?php 
         		
-        		$get_key = SP()->options->get( 'plugin_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
+				$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
+				
+				$check_for_addon_update = json_decode($check_for_addon_update);
 			
-				//$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['plugins']).'/'.strtok(plugin_basename($plugin_file), '/');
+				$check_addons_status = SP()->options->get( 'spl_plugin_info_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
 				
-				$api_data = array(
-			
-			        'version'   => $plugin_data['Version'],   // current version number
-			        'license'   => $get_key,        // license key (used get_option above to retrieve from DB)
-			        'author'    => $plugin_data['Author'],  // author of this plugin
-			        'API_action' => 'get_version' // api action
-			    );
-				
-				if($plugin_data['ItemId'] == ''){
-					
-					$api_data['item_name'] = $plugin_data['Name'];  // name of this plugin
-					
-				}else{
-					
-					$api_data['item_id'] = $plugin_data['ItemId'];  // id of this plugin
-				}
-				
-				$sp_theme_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $plugin_file, $api_data);
-				
-				$check_for_addon_update = $sp_theme_updater->check_for_addon_update();
-				
-				$data = array('edd_action' => 'check_license', 'status'=> 1);
-			
-				$check_addons_status = $sp_theme_updater->check_addons_status($data);
+				$check_addons_status = json_decode($check_addons_status);
 				
 				if (is_main_site() && isset($check_for_addon_update->new_version) && (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1)) {
         	 ?>

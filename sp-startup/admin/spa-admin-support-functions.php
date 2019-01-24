@@ -704,7 +704,9 @@ function sp_check_addons_status(){
 			
 			$update_info_option 	= 'spl_plugin_info_'.str_replace(' ', '-', strtolower($plugin_data['Name']));
 			
-			$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option);
+			$update_version_option 	= 'spl_plugin_versioninfo_'.str_replace(' ', '-', strtolower($plugin_data['Name']));
+			
+			$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option, 'update_version_option'=>$update_version_option);
 			
 			$sp_plugin_updater->check_addons_status($data);
 		}
@@ -723,7 +725,9 @@ function sp_check_addons_status(){
 			
 			$update_info_option 	= 'spl_theme_info_'.str_replace(' ', '-', strtolower($theme_data['Name']));
 			
-			$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option);
+			$update_version_option 	= 'spl_theme_versioninfo_'.str_replace(' ', '-', strtolower($theme_data['Name']));
+			
+			$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option, 'update_version_option'=>$update_version_option);
 			
 			$sp_theme_updater->check_addons_status($data);
 		}
@@ -913,6 +917,7 @@ function sp_theme_addon_dashboard_update()
  */
 
 function check_for_plugin_addon_update() {
+	
 	
 	$plugins = SP()->plugin->get_list();
 	$header = true;
