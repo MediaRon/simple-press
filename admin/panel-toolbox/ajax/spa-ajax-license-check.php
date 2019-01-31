@@ -32,18 +32,19 @@ if($_POST['sp_action'] == 'activate_license' || $_POST['sp_action'] == 'deactiva
 	$license_key = trim( $_POST['licence_key'] );
 	
 	$item_name = trim( $_POST['item_name'] );
+	$item_name = sanitize_title_with_dashes($item_name);
 	
 	if($_POST['sp_item'] == 'sp_check_pugin'){
 		
-		$update_key_option 		= 'plugin_'.str_replace(' ', '-', strtolower($item_name));
-		$update_status_option 	= 'spl_plugin_stats_'.str_replace(' ', '-', strtolower($item_name));
-		$update_info_option 	= 'spl_plugin_info_'.str_replace(' ', '-', strtolower($item_name));
+		$update_key_option 		= 'plugin_'.$item_name;
+		$update_status_option 	= 'spl_plugin_stats_'.$item_name;
+		$update_info_option 	= 'spl_plugin_info_'.$item_name;
 		
 	}else{
 		
-		$update_key_option 		= 'theme_'.str_replace(' ', '-', strtolower($item_name));
-		$update_status_option 	= 'spl_theme_stats_'.str_replace(' ', '-', strtolower($item_name));
-		$update_info_option 	= 'spl_theme_info_'.str_replace(' ', '-', strtolower($item_name));
+		$update_key_option 		= 'theme_'.$item_name;
+		$update_status_option 	= 'spl_theme_stats_'.$item_name;
+		$update_info_option 	= 'spl_theme_info_'.$item_name;
 	}
 	
 	/* in SP_Addon_STORE Apis
@@ -181,7 +182,7 @@ if($_POST['sp_action'] == 'activate_license' || $_POST['sp_action'] == 'deactiva
 		
 	}
 	
-	if($message == '' && $_POST['sp_action'] == 'activate_license'){
+	if(!isset($message) && $_POST['sp_action'] == 'activate_license'){
 		
 		$message = 'License successfully Activated. Thank you.';
 	}

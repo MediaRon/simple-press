@@ -234,13 +234,13 @@ function spa_themes_list_form() {
 					</div>
 <?php
 		         	# any upgrade for this theme?
-				
-					$check_for_addon_update = SP()->options->get( 'spl_theme_versioninfo_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
 					
+					$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
+					
+					$check_for_addon_update = SP()->options->get( 'spl_theme_versioninfo_'.$sp_theme_name);
 					$check_for_addon_update = json_decode($check_for_addon_update);
 			
-					$check_addons_status = SP()->options->get( 'spl_theme_info_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
-					
+					$check_addons_status = SP()->options->get( 'spl_theme_info_'.$sp_theme_name);
 					$check_addons_status = json_decode($check_addons_status);
 				
 					if (is_main_site() && isset($check_for_addon_update->new_version) && (version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1)) {

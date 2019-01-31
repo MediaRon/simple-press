@@ -96,8 +96,8 @@ class SPPluginUpdater {
 			'edd_action' 	=> $this->api_data['API_action'],
 			'license'    	=> isset( $this->api_data['license'] ) ? urlencode( $this->api_data['license'] ) : '123456789',
 			'version'   	=> $this->api_data['version'],   // current version number
-			'item_name'  	=> isset( $this->api_data['item_name'] ) ? urlencode( $this->api_data['item_name'] ) : false,
-			'item_id'    	=> isset( $this->api_data['item_id'] ) ? urlencode( $this->api_data['item_id'] ) : false,
+			'item_name'  	=> isset( $this->api_data['item_name'] ) ? trim( $this->api_data['item_name'] ) : false,
+			'item_id'    	=> isset( $this->api_data['item_id'] ) ? trim( $this->api_data['item_id'] ) : false,
 			'author'    	=> 'Simple:Press',  // author of this plugin
 		);
 		
@@ -129,13 +129,16 @@ class SPPluginUpdater {
 			
 		}else{
 			
+			$addon_info = json_decode(wp_remote_retrieve_body( $response ));
+			$addon_info->item_name = sanitize_title_with_dashes($addon_info->item_name);
+			$update_info_option = json_encode($addon_info);
 			
 			$check_version = $this->check_for_addon_update();
 			
 			$update_version_option = array(
 				'new_version'=> isset( $check_version->new_version ) ? $check_version->new_version : '',
 				'stable_version'=> isset( $check_version->stable_version ) ? $check_version->stable_version : '',
-				'name'=>isset( $check_version->name ) ? $check_version->name : '',
+				'name'=>isset( $check_version->name ) ? sanitize_title_with_dashes($check_version->name) : '',
 				'slug'=>isset( $check_version->slug ) ? $check_version->slug : '',
 				'url'=>isset( $check_version->url ) ? $check_version->url : '',
 				'last_updated'=>isset( $check_version->last_updated ) ? $check_version->last_updated : '',
@@ -145,28 +148,14 @@ class SPPluginUpdater {
 			
 			if(isset($license_data->license)) {
 			
-				if( $license_data->license == 'expired' ) {
-					
-					// delete status from option table
-					SP()->options->delete( $data['update_status_option'] );
-					
-					// delete info from option table
-					SP()->options->delete( $data['update_info_option'] );
-					
-					// delete update_version_option from option table
-					SP()->options->delete( $data['update_version_option'] );
-					
-				}else{
-					
-					// save status to option table
-					SP()->options->update( $data['update_status_option'], $license_data->license );
-					
-					// save info to option table
-					SP()->options->update( $data['update_info_option'], wp_remote_retrieve_body( $response ) );
-					
-					// save update_version_option to option table
-					SP()->options->update( $data['update_version_option'], json_encode($update_version_option) );
-				}
+				// save status to option table
+				SP()->options->update( $data['update_status_option'], $license_data->license );
+				
+				// save info to option table
+				SP()->options->update( $data['update_info_option'], isset( $update_info_option ) ? $update_info_option : '');
+				
+				// save update_version_option to option table
+				SP()->options->update( $data['update_version_option'], json_encode($update_version_option) );
 			}
 		}
 	}

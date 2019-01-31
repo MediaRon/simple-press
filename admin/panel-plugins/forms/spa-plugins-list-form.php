@@ -144,7 +144,6 @@ function spa_plugins_list_form() {
 					}
 					$actionlink = apply_filters('sph_plugins_inactive_buttons', $actionlink, $plugin_file);
 					$rowClass = 'inactive';
-                    if ($update) $rowClass.= ' update';
 					$icon = '<img src="'.SPADMINIMAGES.'sp_No.png" title="'.SP()->primitives->admin_text('Plugin not activated').'" alt="" style="vertical-align: middle;" />';
 					$disabled = '';
 				}
@@ -193,12 +192,12 @@ function spa_plugins_list_form() {
         	
         	<?php 
         		
-				$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
-				
+				$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
+
+				$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.$sp_plugin_name);
 				$check_for_addon_update = json_decode($check_for_addon_update);
 			
-				$check_addons_status = SP()->options->get( 'spl_plugin_info_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
-				
+				$check_addons_status = SP()->options->get( 'spl_plugin_info_'.$sp_plugin_name);
 				$check_addons_status = json_decode($check_addons_status);
 				
 				if (is_main_site() && isset($check_for_addon_update->new_version) && (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1)) {

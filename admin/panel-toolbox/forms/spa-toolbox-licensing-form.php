@@ -30,19 +30,19 @@ function spa_toolbox_licensing_form() {
 		
 		if ($is_active) {
 			
-			$get_key = SP()->options->get( 'plugin_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
+			$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
 			
-			$license_status = SP()->options->get('spl_plugin_stats_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
-				
-			$license_info 	= SP()->options->get('spl_plugin_info_'.str_replace(' ', '-', strtolower($plugin_data['Name'])));
+			$get_key = SP()->options->get( 'plugin_'.$sp_plugin_name);
+			
+			$license_status = SP()->options->get('spl_plugin_stats_'.$sp_plugin_name);
+			
+			$license_info 	= SP()->options->get('spl_plugin_info_'.$sp_plugin_name);
 				
 			$license_info	= json_decode($license_info);
 			
-			if ($license_info && $license_info->license != '') {
+			if ($sp_plugin_name && $sp_plugin_name != '') {
 				
-				$button_id 	= preg_replace('/\s*/', '', $plugin_data['Name']);
-				
-				$button_id 	= strtolower($button_id);
+				$button_id 	= $sp_plugin_name;
 				
 				$total_days = -1;
 				
@@ -158,23 +158,21 @@ function spa_toolbox_licensing_form() {
 	
 	foreach ($themes as $theme_file => $theme_data) {
 		
-		$get_key = SP()->options->get( 'theme_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
-		
-		$license_status = SP()->options->get('spl_theme_stats_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
-		
-		$license_info 	= SP()->options->get('spl_theme_info_'.str_replace(' ', '-', strtolower($theme_data['Name'])));
+		$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
+
+		$get_key = SP()->options->get( 'theme_'.$sp_theme_name);
+		$license_status = SP()->options->get('spl_theme_stats_'.$sp_theme_name);
+		$license_info 	= SP()->options->get('spl_theme_info_'.$sp_theme_name);
 		$license_info	= json_decode($license_info);
 			
-		if ($license_info && $license_info->license != '') {
+		if ($sp_theme_name && $sp_theme_name != '') {
 			
-			$button_id 		= preg_replace('/\s*/', '', $theme_data['Name']);
-			$button_id 		= strtolower($button_id);
+			$button_id 	= $sp_theme_name;
 			$total_days = -1;
 			
 			if(isset($license_info) && $license_info != '' && isset($license_info->expires)){
 				
 				$get_expiredate =  date('Y-m-d', strtotime($license_info->expires));
-				
 				$warn_expiredate = date('Y-m-d', strtotime(' + 3 days'));
 				
 				if($warn_expiredate >= $get_expiredate){

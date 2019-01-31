@@ -823,6 +823,10 @@ function sp_perform_install($phase, $subphase = 0) {
 
 			# set up weekly news processing
 			wp_schedule_event(time(), 'sp_news_interval', 'sph_news_cron');
+			
+			# set up daily sp_check_addons_status_cron
+			wp_schedule_event(time(), 'ten_minutes', 'sp_check_addons_status_cron');
+			
 			# and initial item
 			SP()->DB->execute("INSERT INTO `spf_sfmeta` (`meta_type`, `meta_key`, `meta_value`)
 						 VALUES

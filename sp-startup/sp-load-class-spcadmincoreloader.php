@@ -173,10 +173,6 @@ class spcAdminCoreLoader {
 		
 		add_action('wp_dashboard_setup', 'spa_dashboard_addon_news_setup', 1);
 		
-		add_action('plugins_loaded', 'sp_check_addons_status');
-		
-		add_action('wp_update_plugins', 'check_for_sp_addons_updates');
-		
 		add_action('core_upgrade_preamble', 'check_for_plugin_addon_update' );
 		
 		add_action('core_upgrade_preamble', 'check_for_theme_addon_update' );
