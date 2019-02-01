@@ -200,7 +200,10 @@ function spa_plugins_list_form() {
 				$check_addons_status = SP()->options->get( 'spl_plugin_info_'.$sp_plugin_name);
 				$check_addons_status = json_decode($check_addons_status);
 				
-				if (is_main_site() && isset($check_for_addon_update->new_version) && (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1)) {
+				$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+				$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
+				
+				if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
         	 ?>
         	<tr class='<?php echo $rowClass; ?>'>
         		<td></td>

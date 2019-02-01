@@ -720,7 +720,10 @@ function sp_plugin_addon_dashboard_update()
 				$check_for_addon_update = json_decode($check_for_addon_update);
 				$check_addons_status = json_decode($check_addons_status);
 				
-				if (isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != 'false' && isset($check_addons_status->license) && (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1) && $check_addons_status->license != 'expired') {
+				$update_condition = isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+				$satatus_condition = isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+				
+				if ($update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
 					
 					if ($header) {
 						
@@ -770,7 +773,10 @@ function sp_theme_addon_dashboard_update()
 				$check_for_addon_update = json_decode($check_for_addon_update);
 				$check_addons_status = json_decode($check_addons_status);
 				
-				if (isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != 'false' && isset($check_addons_status->license) && (version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1) && $check_addons_status->license != 'expired') {
+				$update_condition = isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+				$satatus_condition = isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+				
+				if ($update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
 				
 					if ($header) {
 						?>
@@ -824,6 +830,7 @@ function check_for_plugin_addon_update() {
 			$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.$sp_plugin_name);
 			$check_addons_status = SP()->options->get( 'spl_plugin_info_'.$sp_plugin_name);
 			
+			
 			if($check_for_addon_update != '' && $check_addons_status != ''){
 				
 				$check_for_addon_update = json_decode($check_for_addon_update);
@@ -837,7 +844,10 @@ function check_for_plugin_addon_update() {
 				$check_addons_status = $sp_plugin_updater->check_addons_status($data);
 			}
 			
-			if ($check_for_addon_update != '' && $check_addons_status != '' && $check_for_addon_update->new_version != '' && (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1) && $check_addons_status->license != 'expired') {
+			$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+			$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+			
+			if ( $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
 				
 				if ($header) {
 					
@@ -934,7 +944,10 @@ function check_for_theme_addon_update(){
 				$check_addons_status = $sp_theme_updater->check_addons_status($data);
 			}
 			
-			if ($check_for_addon_update != '' && $check_addons_status != '' && $check_for_addon_update->new_version != '' && (version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1) && $check_addons_status->license != 'expired') {
+			$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+			$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+			
+			if ( $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
 			
 				if ($header) {
 					$form_action = 'update-core.php?action=do-sp-theme-upgrade';

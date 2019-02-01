@@ -111,8 +111,11 @@ function spa_themes_list_form() {
 			$check_addons_status = SP()->options->get( 'spl_theme_info_'.str_replace(' ', '-', esc_attr($curTheme['theme'])));
 			
 			$check_addons_status = json_decode($check_addons_status);
+			
+			$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+			$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
 		
-			if (is_main_site() && isset($check_for_addon_update->new_version) && (version_compare($check_for_addon_update->new_version, $themes[$curTheme['theme']]['Version'], '>') == 1)) {
+			if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$themes[$curTheme['theme']]['Version'], '>') == 1)) {
 			
 				echo '<br />';
 				echo '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';
@@ -242,8 +245,11 @@ function spa_themes_list_form() {
 			
 					$check_addons_status = SP()->options->get( 'spl_theme_info_'.$sp_theme_name);
 					$check_addons_status = json_decode($check_addons_status);
+					
+					$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+					$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
 				
-					if (is_main_site() && isset($check_for_addon_update->new_version) && (version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1)) {
+					if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
 					
 						echo '<br />';
 						echo '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';
