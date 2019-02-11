@@ -276,6 +276,7 @@ class spcCoreLoader {
 			add_action('wp', 'sp_cron_scheduler');
 			add_action('sp_check_addons_status_cron', 'sp_check_addons_status');
 			add_action('wp_update_plugins', 'check_for_sp_addons_updates');
+			add_action('wp_update_plugins', 'sp_check_for_updates');
 		}
 
 		# WP Avatar replacement - low priority - let everyone else settle out

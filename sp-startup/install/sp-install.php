@@ -1,10 +1,10 @@
 <?php
 /*
-  Simple:Press
-  Main Forum Installer (New Instalations)
-  $LastChangedDate: 2018-12-03 11:05:54 -0600 (Mon, 03 Dec 2018) $
-  $Rev: 15840 $
- */
+* Simple:Press
+* Main Forum Installer (New Instalations)
+* $LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
+* $Rev: 15840 $
+*/
 
 if (preg_match('#'.basename(__FILE__).'#', $_SERVER['PHP_SELF'])) die('Access denied - you cannot directly call this file');
 

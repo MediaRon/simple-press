@@ -2,7 +2,7 @@
  Simple:Press - Version 5.0
  Forum Admin Javascript loaded in footer after page loads
 
- $LastChangedDate: 2016-04-25 09:48:50 -0700 (Mon, 25 Apr 2016) $
+ $LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
  $Rev: 14157 $
  ------------------------------------ */
 

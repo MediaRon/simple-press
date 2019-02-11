@@ -3,7 +3,7 @@
  * Core Support Functions
  * This file loads at core level - all page loads for admin and front
  *
- *  $LastChangedDate: 2018-11-13 20:41:56 -0600 (Tue, 13 Nov 2018) $
+ *  $LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
  *  $Rev: 15817 $
  */
 if (preg_match('#'.basename(__FILE__).'#', $_SERVER['PHP_SELF'])) die('Access denied - you cannot directly call this file');
@@ -248,6 +248,79 @@ function sp_load_version_xml($showError = true, $usecache = true) {
 	}
 
 	return $xml;
+}
+
+/**
+ * This function determines if there is an update available to the core Simple Press plugin.
+ *
+ * @since 6.0
+ *
+ * @param string $domain theme text domain
+ *                       * @return void
+ */
+function sp_check_for_updates() {
+	$xml = sp_load_version_xml();
+	if ($xml) {
+		# make sure SP is installed
+		$installed_build = SP()->options->get('sfbuild');
+		if (empty($installed_build)) return;
+
+		$update  = false;
+		$plugins = SP()->plugin->get_list();
+		if (!empty($plugins)) {
+			$up = new stdClass;
+			foreach ($plugins as $file => $installed) {
+				foreach ($xml->plugins->plugin as $latest) {
+					if ($installed['Name'] == $latest->name) {
+						if ((version_compare($latest->version, $installed['Version'], '>') == 1)) {
+							$data                = new stdClass;
+							$data->slug          = $file;
+							$data->new_version   = (string)$latest->version;
+							$data->url           = 'https://simple-press.com';
+							$data->package       = ((string)$latest->archive).'&wpupdate=1';
+							$up->response[$file] = $data;
+							$update              = true;
+						}
+					}
+				}
+			}
+		}
+
+		if ($update) {
+			set_site_transient('sp_update_plugins', $up);
+		} else {
+			delete_site_transient('sp_update_plugins');
+		}
+
+		require_once SP_PLUGIN_DIR.'/admin/panel-themes/support/spa-themes-prepare.php';
+		$update = false;
+		$themes = SP()->theme->get_list();
+		if (!empty($themes)) {
+			$up = new stdClass;
+			foreach ($themes as $file => $installed) {
+				foreach ($xml->themes->theme as $latest) {
+					if ($installed['Name'] == $latest->name) {
+						if ((version_compare($latest->version, $installed['Version'], '>') == 1)) {
+							$data                = new stdClass;
+							$data->slug          = $file;
+							$data->stylesheet    = $installed['Stylesheet'];
+							$data->new_version   = (string)$latest->version;
+							$data->url           = 'https://simple-press.com';
+							$data->package       = ((string)$latest->archive).'&wpupdate=1';
+							$up->response[$file] = $data;
+							$update              = true;
+						}
+					}
+				}
+			}
+		}
+
+		if ($update) {
+			set_site_transient('sp_update_themes', $up);
+		} else {
+			delete_site_transient('sp_update_themes');
+		}
+	}
 }
 
 /**
@@ -788,7 +861,7 @@ function spl_ten_minutes_cron_interval( $schedules ) {
 	
     $schedules['ten_minutes'] = array(
     
-        'interval' => 60 * 10,
+        'interval' => 60 * 2,
         'display'  => esc_html__( 'Every Ten Minutes' ),
     );
  
@@ -876,17 +949,20 @@ function sp_check_addons_status(){
 		SP()->options->update( 'spl_plugins_api_time',  $now->getTimestamp());
 		
 		foreach ($plugins as $plugin_file => $plugin_data) {
-			
-			$sp_plugin_updater = object_sp_plugin($plugin_file, $plugin_data);
+				
+			if(isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != ''){
+				
+				$sp_plugin_updater = object_sp_plugin($plugin_file, $plugin_data);
 
-			$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);			
-			$update_status_option 	= 'spl_plugin_stats_'.$sp_plugin_name;
-			$update_info_option 	= 'spl_plugin_info_'.$sp_plugin_name;
-			$update_version_option 	= 'spl_plugin_versioninfo_'.$sp_plugin_name;
-			
-			$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option, 'update_version_option'=>$update_version_option);
-			
-			$sp_plugin_updater->check_addons_status($data);
+				$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);			
+				$update_status_option 	= 'spl_plugin_stats_'.$sp_plugin_name;
+				$update_info_option 	= 'spl_plugin_info_'.$sp_plugin_name;
+				$update_version_option 	= 'spl_plugin_versioninfo_'.$sp_plugin_name;
+				
+				$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option, 'update_version_option'=>$update_version_option);
+				
+				$sp_plugin_updater->check_addons_status($data);	
+			}
 		}
 	
 	}
@@ -901,16 +977,19 @@ function sp_check_addons_status(){
 		
 		foreach ($themes as $theme_file => $theme_data) {
 			
-			$sp_theme_updater = object_sp_theme($theme_file, $theme_data);
+			if(isset($theme_data['ItemId']) && $theme_data['ItemId'] != ''){
 			
-			$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
-			$update_status_option 	= 'spl_theme_stats_'.$sp_theme_name;
-			$update_info_option 	= 'spl_theme_info_'.$sp_theme_name;
-			$update_version_option 	= 'spl_theme_versioninfo_'.$sp_theme_name;
-			
-			$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option, 'update_version_option'=>$update_version_option);
-			
-			$sp_theme_updater->check_addons_status($data);
+				$sp_theme_updater = object_sp_theme($theme_file, $theme_data);
+				
+				$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
+				$update_status_option 	= 'spl_theme_stats_'.$sp_theme_name;
+				$update_info_option 	= 'spl_theme_info_'.$sp_theme_name;
+				$update_version_option 	= 'spl_theme_versioninfo_'.$sp_theme_name;
+				
+				$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option, 'update_version_option'=>$update_version_option);
+				
+				$sp_theme_updater->check_addons_status($data);
+			}
 		}
 	
 	}
@@ -929,7 +1008,7 @@ function check_for_sp_addons_updates() {
 	
 	foreach ($plugins as $plugin_file => $plugin_data) {
 		
-		if (!empty($plugins)) {
+		if (!empty($plugins) && isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != '') {
 			
 			$now = new DateTime();
 			$now->format('Y-m-d H:i:s');
@@ -967,7 +1046,7 @@ function check_for_sp_addons_updates() {
 	
 	foreach ($themes as $theme_file => $theme_data) {
 		
-		if (!empty($themes)) {
+		if (!empty($themes) && isset($theme_data['ItemId']) && $theme_data['ItemId'] != '') {
 			
 			$now = new DateTime();
 			$now->format('Y-m-d H:i:s');

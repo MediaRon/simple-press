@@ -2,7 +2,7 @@
 /*
 Simple:Press
 Admin Toolbox Licensing Form
-$LastChangedDate: 2018-12-18 11:37:41 -0600 (Tuesday, 18 Dec 2018) $
+$LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
 $Rev: 15601 $
 */
 
@@ -28,7 +28,7 @@ function spa_toolbox_licensing_form() {
 		
 		$is_active = SP()->plugin->is_active($plugin_file);
 		
-		if ($is_active) {
+		if ($is_active && isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != '') {
 			
 			$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
 			
@@ -165,7 +165,7 @@ function spa_toolbox_licensing_form() {
 		$license_info 	= SP()->options->get('spl_theme_info_'.$sp_theme_name);
 		$license_info	= json_decode($license_info);
 			
-		if ($sp_theme_name && $sp_theme_name != '') {
+		if ($sp_theme_name && $sp_theme_name != '' && isset($theme_data['ItemId']) && $theme_data['ItemId'] != '') {
 			
 			$button_id 	= $sp_theme_name;
 			$total_days = -1;

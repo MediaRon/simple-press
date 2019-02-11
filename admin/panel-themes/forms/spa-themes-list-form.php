@@ -15,6 +15,9 @@ function spa_themes_list_form() {
     # get themes
 	$themes = SP()->theme->get_list();
 
+	# get update version info
+	$xml = sp_load_version_xml();
+
 	spa_paint_options_init();
 	spa_paint_open_tab(SP()->primitives->admin_text('Available Themes').'- '.SP()->primitives->admin_text('Select Simple:Press Theme'), true);
 	spa_paint_open_panel();
@@ -102,48 +105,68 @@ function spa_themes_list_form() {
 				}
     		}
 
-         	# any upgrade for this theme?
-		
-			$check_for_addon_update = SP()->options->get( 'spl_theme_versioninfo_'.str_replace(' ', '-', esc_attr($curTheme['theme'])));
-			
-			$check_for_addon_update = json_decode($check_for_addon_update);
-	
-			$check_addons_status = SP()->options->get( 'spl_theme_info_'.str_replace(' ', '-', esc_attr($curTheme['theme'])));
-			
-			$check_addons_status = json_decode($check_addons_status);
-			
-			$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-			$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
-		
-			if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$themes[$curTheme['theme']]['Version'], '>') == 1)) {
-			
-				echo '<br />';
-				echo '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';
+
+			if(isset($themes[$curTheme['theme']]['ItemId']) && $themes[$curTheme['theme']]['ItemId'] != ''){
 				
-				if($check_addons_status->license == 'valid'){
+				# UPDATE LICENCING METHOD
+		
+				$check_for_addon_update = SP()->options->get( 'spl_theme_versioninfo_'.str_replace(' ', '-', esc_attr($curTheme['theme'])));
+				
+				$check_for_addon_update = json_decode($check_for_addon_update);
+		
+				$check_addons_status = SP()->options->get( 'spl_theme_info_'.str_replace(' ', '-', esc_attr($curTheme['theme'])));
+				
+				$check_addons_status = json_decode($check_addons_status);
+				
+				$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+				$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
+			
+				if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$themes[$curTheme['theme']]['Version'], '>') == 1)) {
+				
+					echo '<br />';
 					
-					printf(
-						__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
-						esc_html( esc_attr($curTheme['theme']) ),
-						esc_url( SP_Addon_STORE_URL ),
-						esc_html( $check_for_addon_update->new_version ),
-						esc_url( self_admin_url('update-core.php') )
-					);
-					
-				} else{
-					
-					printf(
-						__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</p>', 'SP' ),
-						esc_html( esc_attr($curTheme['theme']) ),
-						esc_url( SP_Addon_STORE_URL ),
-						esc_html( $check_for_addon_update->new_version )
-					);
+					if($check_addons_status->license == 'valid'){
+						
+						printf(
+							__( '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</div></div>', 'SP' ),
+							esc_html( esc_attr($curTheme['theme']) ),
+							esc_url( SP_Addon_STORE_URL ),
+							esc_html( $check_for_addon_update->new_version ),
+							esc_url( self_admin_url('update-core.php') )
+						);
+						
+					} else{
+						
+						printf(
+							__( '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</div></div>', 'SP' ),
+							esc_html( esc_attr($curTheme['theme']) ),
+							esc_url( SP_Addon_STORE_URL ),
+							esc_html( $check_for_addon_update->new_version )
+						);
+					}
 				}
-				echo '</div></div>';
+				
+			}else{
+				
+				# any upgrade for this theme? in multisite only main site can update
+	    		if (is_main_site() && $xml) {
+	    			foreach ($xml->themes->theme as $latest) {
+	    				if ($themes[$curTheme['theme']]['Name'] == $latest->name) {
+	    					if ((version_compare($latest->version, $themes[$curTheme['theme']]['Version'], '>') == 1)) {
+	    						echo '<br />';
+	    						echo '<p style="padding: 0;">';
+	    						echo '<strong>'.SP()->primitives->admin_text('There is an update for the').' '.$themes[$curTheme['theme']]['Name'].' '.SP()->primitives->admin_text('theme').'.</strong> ';
+	    						echo SP()->primitives->admin_text('Version').' '.$latest->version.' '.SP()->primitives->admin_text('is available').'. ';
+	    						echo SP()->primitives->admin_text('For details and to download please visit').' '.SPPLUGHOME.' '.SP()->primitives->admin_text('or').' '.SP()->primitives->admin_text('go to the').' ';
+	    						echo '<a href="'.self_admin_url('update-core.php').'" title="" target="_parent">'.SP()->primitives->admin_text('WordPress updates page').'</a>';
+	    						echo '</p>';
+	    					}
+	    					break;
+	    				}
+	    			}
+	    		}
 			}
-    		
-    		
-    		
+
         } else {
      		echo '<h4>'.SP()->primitives->admin_text('The current theme stylesheet').':<br /><br />'.SPTHEMEBASEDIR.$curTheme['theme'].'/styles/'.$curTheme['style'].'<br /><br />'.SP()->primitives->admin_text('cannot be found. Please correct or select a new theme for proper operation.').'</h4>';
         }
@@ -236,46 +259,66 @@ function spa_themes_list_form() {
 	                    </form>
 					</div>
 <?php
-		         	# any upgrade for this theme?
-					
-					$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
-					
-					$check_for_addon_update = SP()->options->get( 'spl_theme_versioninfo_'.$sp_theme_name);
-					$check_for_addon_update = json_decode($check_for_addon_update);
-			
-					$check_addons_status = SP()->options->get( 'spl_theme_info_'.$sp_theme_name);
-					$check_addons_status = json_decode($check_addons_status);
-					
-					$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-					$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
+
+					if(isset($theme_data['ItemId']) && $theme_data['ItemId'] != ''){
 				
-					if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
-					
-						echo '<br />';
-						echo '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';
+						# UPDATE LICENCING METHOD
 						
-						if($check_addons_status->license == 'valid'){
+						$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
+						$check_for_addon_update = SP()->options->get( 'spl_theme_versioninfo_'.$sp_theme_name);
+						$check_for_addon_update = json_decode($check_for_addon_update);
+						$check_addons_status = SP()->options->get( 'spl_theme_info_'.$sp_theme_name);
+						$check_addons_status = json_decode($check_addons_status);
+						$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+						$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
+					
+						if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
+						
+							echo '<br />';
+							echo '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';
 							
-        					printf(
-								__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
-								esc_html( $theme_data['Name'] ),
-								esc_url( SP_Addon_STORE_URL ),
-								esc_html( $check_for_addon_update->new_version ),
-								esc_url( self_admin_url('update-core.php') )
-							);
-							
-        				} else{
-        					
-        					printf(
-								__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</p>', 'SP' ),
-								esc_html( $theme_data['Name'] ),
-								esc_url( SP_Addon_STORE_URL ),
-								esc_html( $check_for_addon_update->new_version )
-							);
-        				}
-						echo '</div></div>';
-					}
+							if($check_addons_status->license == 'valid'){
 								
+	        					printf(
+									__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
+									esc_html( $theme_data['Name'] ),
+									esc_url( SP_Addon_STORE_URL ),
+									esc_html( $check_for_addon_update->new_version ),
+									esc_url( self_admin_url('update-core.php') )
+								);
+								
+	        				} else{
+	        					
+	        					printf(
+									__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</p>', 'SP' ),
+									esc_html( $theme_data['Name'] ),
+									esc_url( SP_Addon_STORE_URL ),
+									esc_html( $check_for_addon_update->new_version )
+								);
+	        				}
+							echo '</div></div>';
+						}
+						
+					}else{
+						
+						# any upgrade for this theme?
+						if ($xml) {
+							foreach ($xml->themes->theme as $latest) {
+								if ($theme_data['Name'] == $latest->name) {
+									if ((version_compare($latest->version, $theme_data['Version'], '>') == 1)) {
+										echo '<br />';
+										echo '<div class="plugin-update-tr"><div class="update-message" style="background-color:#fcf3ef;margin-left:10px;">';
+										echo '<strong>'.SP()->primitives->admin_text('There is an update for the').' '.$theme_data['Name'].' '.SP()->primitives->admin_text('theme').'.</strong> ';
+										echo SP()->primitives->admin_text('Version').' '.$latest->version.' '.SP()->primitives->admin_text('is available').'. ';
+										echo SP()->primitives->admin_text('For details and to download please visit').' '.SPPLUGHOME.' '.SP()->primitives->admin_text('or').' '.SP()->primitives->admin_text('go to the').' ';
+										echo '<a href="'.self_admin_url('update-core.php').'" title="" target="_parent">'.SP()->primitives->admin_text('WordPress updates page').'</a>';
+										echo '</div></div>';
+									}
+									break;
+								}
+							}
+						}
+					}
 
 				echo '</div>';
        		}

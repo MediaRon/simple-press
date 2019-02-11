@@ -2,7 +2,7 @@
 /*
 Simple:Press Admin
 Ajax form license-check - Toolbox
-$LastChangedDate: 2018-11-02 13:02:17 -0500 (Fri, 02 Nov 2018) $
+$LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
 $Rev: 15795 $
 */
 

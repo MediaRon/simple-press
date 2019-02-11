@@ -819,10 +819,11 @@ function check_for_plugin_addon_update() {
 	$header = true;
 	$update = false;
 	$up = new stdClass;
+	$xml = sp_load_version_xml();
 	
 	foreach ($plugins as $plugin_file => $plugin_data) {
 		
-		if (!empty($plugins)) {
+		if (!empty($plugins) && isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != '') {
 			
 			$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['plugins']).'/'.strtok(plugin_basename($plugin_file), '/');
 			
@@ -862,14 +863,14 @@ function check_for_plugin_addon_update() {
 						<table class="widefat" id="update-plugins-table">
 							<thead>
 								<tr>
-									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all" /></th>
-									<th scope="col" class="manage-column"><label for="themes-select-all"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-4" /></th>
+									<th scope="col" class="manage-column"><label for="themes-select-all-4"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
 								</tr>
 							</thead>
 							<tfoot>
 								<tr>
-									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-2" /></th>
-									<th scope="col" class="manage-column"><label for="themes-select-all-2"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-4" /></th>
+									<th scope="col" class="manage-column"><label for="themes-select-all-4"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
 								</tr>
 							</tfoot>
 							<tbody class="plugins">
@@ -890,6 +891,59 @@ function check_for_plugin_addon_update() {
 				$update = true;
 			}
 		
+		}else{
+			
+			if ($xml) {
+					
+				foreach ($xml->plugins->plugin as $latest) {
+					
+					if ($plugin_data['Name'] == $latest->name) {
+						
+						if ((version_compare($latest->version, $plugin_data['Version'], '>') == 1)) {
+								
+							if ($header) {
+							$form_action = 'update-core.php?action=do-sp-plugin-upgrade';
+							?>
+							<h3><?php SP()->primitives->admin_etext('Simple:Press Plugins'); ?></h3>
+							<p><?php SP()->primitives->admin_etext('The following plugins have new versions available. Check the ones you want to update and then click Update SP Plugin'); ?></p>
+							<p><?php SP()->primitives->admin_etext('Please Note: Any customizations you have made to plugin files will be lost'); ?></p>
+							<form method="post" action="<?php echo $form_action; ?>" name="upgrade-sp-plugins" class="upgrade">
+								<?php wp_nonce_field('upgrade-core'); ?>
+								<p><input id="upgrade-themes" class="button" type="submit" value="<?php SP()->primitives->admin_etext('Update SP Plugins'); ?>" name="upgrade" /></p>
+								<table class="widefat" id="update-themes-table">
+									<thead>
+										<tr>
+											<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-4" /></th>
+											<th scope="col" class="manage-column"><label for="themes-select-all-4"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+										</tr>
+									</thead>
+									<tfoot>
+										<tr>
+											<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-4" /></th>
+											<th scope="col" class="manage-column"><label for="themes-select-all-4"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+										</tr>
+									</tfoot>
+									<tbody class="plugins">
+										<?php
+										$header = false;
+									}
+									echo "
+									<tr class='active'>
+									<th scope='row' class='check-column'><input type='checkbox' name='checked[]' value='".esc_attr($plugin_file)."' /></th>
+									<td><strong>{$plugin_data['Name']}</strong><br />".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $plugin_data['Version'], $latest->version, $latest->requires).'</td>
+									</tr>';
+									$data = new stdClass;
+									$data->slug = $plugin_file;
+									$data->new_version = (string) $latest->version;
+									$data->url = 'https://simple-press.com';
+									$data->package = ((string) $latest->archive).'&wpupdate=1';
+									$up->response[$plugin_file] = $data;
+									$update = true;
+						}
+					}	
+				}
+			}
+				
 		}
 		
 	}
@@ -920,10 +974,11 @@ function check_for_theme_addon_update(){
 	$header = true;
 	$update = false;
 	$up = new stdClass;
+	$xml = sp_load_version_xml();
 	
 	foreach ($themes as $theme_file => $theme_data) {
 		
-		if (!empty($themes)) {
+		if (!empty($themes) && isset($theme_data['ItemId']) && $theme_data['ItemId'] != '') {
 			
 			$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['themes']).'/'.$theme_file;
 			
@@ -961,14 +1016,14 @@ function check_for_theme_addon_update(){
 						<table class="widefat" id="update-themes-table">
 							<thead>
 								<tr>
-									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all" /></th>
-									<th scope="col" class="manage-column"><label for="themes-select-all"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-3" /></th>
+									<th scope="col" class="manage-column"><label for="themes-select-all-3"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
 								</tr>
 							</thead>
 							<tfoot>
 								<tr>
-									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-2" /></th>
-									<th scope="col" class="manage-column"><label for="themes-select-all-2"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+									<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-3" /></th>
+									<th scope="col" class="manage-column"><label for="themes-select-all-3"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
 								</tr>
 							</tfoot>
 							<tbody class="plugins">
@@ -991,7 +1046,65 @@ function check_for_theme_addon_update(){
 				$update = true;
 			}
 
-		}	
+		}else{
+			
+			if ($xml) {
+				
+				require_once SP_PLUGIN_DIR.'/admin/panel-themes/support/spa-themes-prepare.php';
+				
+				foreach ($xml->themes->theme as $latest) {
+						
+					if ($theme_data['Name'] == $latest->name) {
+							
+						if ((version_compare($latest->version, $theme_data['Version'], '>') == 1)) {
+							
+							if ($header) {
+								$form_action = 'update-core.php?action=do-sp-theme-upgrade';
+								?>
+								<h3><?php SP()->primitives->admin_etext('Simple:Press Themes'); ?></h3>
+								<p><?php SP()->primitives->admin_etext('The following themes have new versions available. Check the ones you want to update and then click Update Themes.'); ?></p>
+								<p><?php echo '<b>'.SP()->primitives->admin_text('Please Note:').'</b> '.SP()->primitives->admin_text('Any customizations you have made to theme files will be lost.'); ?></p>
+								<form method="post" action="<?php echo $form_action; ?>" name="upgrade-themes" class="upgrade">
+									<?php wp_nonce_field('upgrade-core'); ?>
+									<p><input id="upgrade-themes" class="button" type="submit" value="<?php SP()->primitives->admin_etext('Update SP Themes'); ?>" name="upgrade" /></p>
+									<table class="widefat" id="update-themes-table">
+										<thead>
+											<tr>
+												<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all" /></th>
+												<th scope="col" class="manage-column"><label for="themes-select-all"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+											</tr>
+										</thead>
+										<tfoot>
+											<tr>
+												<th scope="col" class="manage-column check-column"><input type="checkbox" id="themes-select-all-2" /></th>
+												<th scope="col" class="manage-column"><label for="themes-select-all-2"><?php SP()->primitives->admin_etext('Select All'); ?></label></th>
+											</tr>
+										</tfoot>
+										<tbody class="plugins">
+											<?php
+											$header = false;
+										}
+										$screenshot = SPTHEMEBASEURL.$file.'/'.$theme_data['Screenshot'];
+										echo "
+								<tr class='active'>
+								<th scope='row' class='check-column'><input type='checkbox' name='checked[]' value='".esc_attr($theme_file)."' /></th>
+								<td class='plugin-title'><img src='$screenshot' width='64' height='64' style='float:left; padding: 5px' /><strong>{$theme_data['Name']}</strong>".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $theme_data['Version'], $latest->version, $latest->requires)."</td>
+								</tr>";
+										$data = new stdClass;
+										$data->slug = $theme_file;
+										$data->stylesheet = $theme_data['Stylesheet'];
+										$data->new_version = (string) $latest->version;
+										$data->url = 'https://simple-press.com';
+										$data->package = ((string) $latest->archive).'&wpupdate=1';
+										$up->response[$theme_file] = $data;
+										$update = true;
+						}
+					}
+						
+				}
+					
+			}
+		}
 	}
 
 	# any themes to update?

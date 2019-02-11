@@ -50,6 +50,21 @@ function spa_plugins_list_form() {
     # get plugins
 	$plugins = spa_get_plugins_list_data();
 
+	# get update version info
+	$xml = sp_load_version_xml();
+
+    # get versions of our plugins
+    $versions = array();
+    $required = array();
+    $folders = array();
+    if ($xml) {
+        foreach ($xml->plugins->plugin as $plugin) {
+        	$versions[(string) $plugin->name] = (string) $plugin->version;
+        	$required[(string) $plugin->name] = (string) $plugin->requires;
+        	$folders[(string) $plugin->name] = (string) $plugin->folder;
+        }
+    }
+
     # check active plugins
     $invalid = SP()->plugin->validate_active();
     if (!empty($invalid)) {
@@ -114,6 +129,7 @@ function spa_plugins_list_form() {
 		$disabled = '';
 
     	foreach ((array) $plugins as $plugin_file => $plugin_data) {
+            $update = (!empty($versions[$plugin_data['Name']])) ? ((version_compare($versions[$plugin_data['Name']], $plugin_data['Version'], '>') == 1)) : 0;
 
 			# check for valid folder name
 			$path = explode('/', $plugin_file);
@@ -127,6 +143,7 @@ function spa_plugins_list_form() {
 				$actionlink = apply_filters('sph_plugins_active_buttons', $actionlink, $plugin_file);
 				$actionlink.= sp_paint_plugin_tip($plugin_data['Name'], $plugin_file);
 				$rowClass = 'active';
+                if ($update) $rowClass.= ' update';
                 $icon = '<img src="'.SPADMINIMAGES.'sp_Yes.png" title="'.SP()->primitives->admin_text('Plugin activated').'" alt="" style="vertical-align:middle;" />';
             } else {
 				if ($bad) {
@@ -144,6 +161,7 @@ function spa_plugins_list_form() {
 					}
 					$actionlink = apply_filters('sph_plugins_inactive_buttons', $actionlink, $plugin_file);
 					$rowClass = 'inactive';
+                    if ($update) $rowClass.= ' update';
 					$icon = '<img src="'.SPADMINIMAGES.'sp_No.png" title="'.SP()->primitives->admin_text('Plugin not activated').'" alt="" style="vertical-align: middle;" />';
 					$disabled = '';
 				}
@@ -174,7 +192,7 @@ function spa_plugins_list_form() {
 						<?php echo $description; ?>
 					</div>
 					<div class='<?php echo $rowClass; ?> second plugin-version-author-uri'>
-					<?php
+<?php
 		        		$plugin_meta = array();
 		        		if (!empty($plugin_data['Version'])) $plugin_meta[] = sprintf(SP()->primitives->admin_text('Version %s'), $plugin_data['Version']);
 		        		if (!empty($plugin_data['Author'])) {
@@ -185,55 +203,10 @@ function spa_plugins_list_form() {
 		        		if (!empty($plugin_data['PluginURI'])) $plugin_meta[] = '<a href="'.esc_url($plugin_data['PluginURI']).'" title="'.SP()->primitives->admin_text('Visit plugin site').'">'.esc_html(SP()->primitives->admin_text('Visit plugin site')).'</a>';
 
 		        		echo implode(' | ', $plugin_meta);
-						?>		
+?>
 					</div>
 				</td>
         	</tr>
-        	
-        	<?php 
-        		
-				$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
-
-				$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.$sp_plugin_name);
-				$check_for_addon_update = json_decode($check_for_addon_update);
-			
-				$check_addons_status = SP()->options->get( 'spl_plugin_info_'.$sp_plugin_name);
-				$check_addons_status = json_decode($check_addons_status);
-				
-				$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-				$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
-				
-				if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
-        	 ?>
-        	<tr class='<?php echo $rowClass; ?>'>
-        		<td></td>
-        		<td class="plugin-update colspanchange" colspan="3">
-        			<div class="update-message notice inline notice-warning notice-alt">
-        				<?php if($check_addons_status->license == 'valid'){
-        					
-        					printf(
-								__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
-								esc_html( $plugin_data['Name'] ),
-								esc_url( SP_Addon_STORE_URL ),
-								esc_html( $check_for_addon_update->new_version ),
-								esc_url( self_admin_url('update-core.php') )
-							);
-        					
-        				} else{
-        						
-        					printf(
-								__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this plugin.</p>', 'SP' ),
-								esc_html( $plugin_data['Name'] ),
-								esc_url( SP_Addon_STORE_URL ),
-								esc_html( $check_for_addon_update->new_version )
-							);
-							
-        				 } ?>
-        			</div>
-        		</td>
-        	</tr>
-        	<?php } ?>
-        	
 <?php
 			# is it bad?
 			if ($bad) {
@@ -249,7 +222,72 @@ function spa_plugins_list_form() {
 				</tr>
 <?php
 			}
-        	
+			
+			if(isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != ''){
+				
+				$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
+
+				$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.$sp_plugin_name);
+				$check_for_addon_update = json_decode($check_for_addon_update);
+			
+				$check_addons_status = SP()->options->get( 'spl_plugin_info_'.$sp_plugin_name);
+				$check_addons_status = json_decode($check_addons_status);
+				
+				$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
+				$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
+				
+				if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
+					
+?>
+					<tr class='<?php echo $rowClass; ?>'>
+		        		<td></td>
+		        		<td class="plugin-update colspanchange" colspan="3">
+		        			<div class="update-message notice inline notice-warning notice-alt">
+		        				<?php if($check_addons_status->license == 'valid'){
+		        					
+		        					printf(
+										__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
+										esc_html( $plugin_data['Name'] ),
+										esc_url( SP_Addon_STORE_URL ),
+										esc_html( $check_for_addon_update->new_version ),
+										esc_url( self_admin_url('update-core.php') )
+									);
+		        					
+		        				} else{
+		        						
+		        					printf(
+										__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this plugin.</p>', 'SP' ),
+										esc_html( $plugin_data['Name'] ),
+										esc_url( SP_Addon_STORE_URL ),
+										esc_html( $check_for_addon_update->new_version )
+									);
+									
+		        				 } ?>
+		        			</div>
+		        		</td>
+		        	</tr>
+<?php }
+				
+			}else{
+				
+				# any upgrade for this plugin?  in multisite only main site can update
+				if (is_main_site() && $versions && $update) {
+    				$active = ($is_active) ? ' active' : '';
+?>
+					<tr class="plugin-update-tr<?php echo $active; ?>">
+						<td class="plugin-update colspanchange" colspan="4">
+							<div class="update-message notice inline notice-warning notice-alt">
+								<?php echo SP()->primitives->admin_text('There is an update for the').' '.$plugin_data['Name'].' '.SP()->primitives->admin_text('plugin').'.<br />'; ?>
+								<?php echo SP()->primitives->admin_text('Version').' '.$versions[$plugin_data['Name']].' '.SP()->primitives->admin_text('of the plugin is available').'.<br />'; ?>
+								<?php echo SP()->primitives->admin_text('This newer version requires at least Simple:Press version').' '.$required[$plugin_data['Name']].'.<br />'; ?>
+								<?php echo SP()->primitives->admin_text('For details, please visit').' '.SPPLUGHOME.' '.SP()->primitives->admin_text('or').' ' ?>
+								<?php echo '<a href="'.self_admin_url('update-core.php').'" title="">'.SP()->primitives->admin_text('update now').'</a>.'; ?>
+							</div>
+						</td>
+					</tr>
+<?php
+				}
+			}
         }
 		do_action('sph_plugins_list_panel');
 ?>
