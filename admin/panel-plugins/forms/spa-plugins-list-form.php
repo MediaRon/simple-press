@@ -238,6 +238,8 @@ function spa_plugins_list_form() {
 				
 				if (is_main_site() && $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
 					
+					$changelog_link = add_query_arg( array( 'tab' => 'plugin-information', 'plugin' => $sp_plugin_name, 'section' => 'changelog', 'TB_iframe' => true, 'width' => 722, 'height' => 949 ), admin_url( 'plugin-install.php' ) );
+					
 ?>
 					<tr class='<?php echo $rowClass; ?>'>
 		        		<td></td>
@@ -246,9 +248,9 @@ function spa_plugins_list_form() {
 		        				<?php if($check_addons_status->license == 'valid'){
 		        					
 		        					printf(
-										__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
+										__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox open-plugin-details-modal" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
 										esc_html( $plugin_data['Name'] ),
-										esc_url( SP_Addon_STORE_URL ),
+										esc_url( esc_url( $changelog_link ) ),
 										esc_html( $check_for_addon_update->new_version ),
 										esc_url( self_admin_url('update-core.php') )
 									);
@@ -256,9 +258,9 @@ function spa_plugins_list_form() {
 		        				} else{
 		        						
 		        					printf(
-										__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this plugin.</p>', 'SP' ),
+										__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox open-plugin-details-modal" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this plugin.</p>', 'SP' ),
 										esc_html( $plugin_data['Name'] ),
-										esc_url( SP_Addon_STORE_URL ),
+										esc_url( esc_url( $changelog_link ) ),
 										esc_html( $check_for_addon_update->new_version )
 									);
 									

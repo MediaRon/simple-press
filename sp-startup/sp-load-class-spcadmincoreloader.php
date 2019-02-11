@@ -176,6 +176,9 @@ class spcAdminCoreLoader {
 		add_action('core_upgrade_preamble', 'check_for_plugin_addon_update' );
 		
 		add_action('core_upgrade_preamble', 'check_for_theme_addon_update' );
+		
+		add_filter( 'plugins_api', 'spl_plugin_changelog', 10, 3 );
+		
 	}
 
 	public function check_wp_plugin_page() {

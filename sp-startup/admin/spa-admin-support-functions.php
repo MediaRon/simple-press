@@ -669,6 +669,7 @@ if ( ! function_exists( 'object_sp_theme' ) ) {
 	function object_sp_theme($theme_file, $theme_data){
 		
 		$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
+		
 		$get_key = SP()->options->get( 'theme_'.$sp_theme_name);
 		
 		$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['themes']).'/'.$theme_file;
@@ -694,6 +695,86 @@ if ( ! function_exists( 'object_sp_theme' ) ) {
 		
 		return $sp_theme_updater;
 	}
+}
+
+function spl_plugin_changelog($_data, $_action = '', $_args = null ){
+	
+	
+	if ( $_action != 'plugin_information' ) {
+
+		return $_data;
+	}
+	
+	$plugins = SP()->plugin->get_list();
+	
+	foreach ($plugins as $plugin_file => $plugin_data) {
+		
+		$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
+		
+		
+		if (!empty($plugins) && isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != '' && $sp_plugin_name === $_args->slug) {
+			
+			$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.$_args->slug);
+	
+			$_data = json_decode($check_for_addon_update);
+			
+			if ( $_data && isset( $_data->sections ) ) {
+				
+				$_data->sections = maybe_unserialize( $_data->sections );
+				
+			} else {
+				
+				$_data = false;
+			}
+			
+			
+			if ( $_data && isset( $_data->banners ) ) {
+				
+				$_data->banners = maybe_unserialize( $_data->banners );
+			}
+			
+			return $_data;
+					
+		}
+	}
+	
+	$themes = SP()->theme->get_list();
+	
+	foreach ($themes as $theme_file => $theme_data) {
+		
+		$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
+			
+		
+		if (!empty($themes) && isset($theme_data['ItemId']) && $theme_data['ItemId'] != '' && $sp_theme_name === $_args->slug) {
+			
+			
+			$check_for_addon_update = SP()->options->get( 'spl_theme_versioninfo_'.$sp_theme_name);
+	
+			$_data = json_decode($check_for_addon_update);
+			
+			
+			if ( $_data && isset( $_data->sections ) ) {
+				
+				$_data->sections = maybe_unserialize( $_data->sections );
+				
+			} else {
+				
+				$_data = false;
+			}
+			
+			
+			if ( $_data && isset( $_data->banners ) ) {
+				
+				$_data->banners = maybe_unserialize( $_data->banners );
+			}
+			
+			return $_data;
+					
+		}
+	}
+	
+	return $_data;
+	
 }
 
 /**
@@ -824,6 +905,7 @@ function check_for_plugin_addon_update() {
 	foreach ($plugins as $plugin_file => $plugin_data) {
 		
 		if (!empty($plugins) && isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != '') {
+			
 			
 			$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['plugins']).'/'.strtok(plugin_basename($plugin_file), '/');
 			
@@ -1085,11 +1167,9 @@ function check_for_theme_addon_update(){
 											$header = false;
 										}
 										$screenshot = SPTHEMEBASEURL.$file.'/'.$theme_data['Screenshot'];
-										echo "
-								<tr class='active'>
-								<th scope='row' class='check-column'><input type='checkbox' name='checked[]' value='".esc_attr($theme_file)."' /></th>
-								<td class='plugin-title'><img src='$screenshot' width='64' height='64' style='float:left; padding: 5px' /><strong>{$theme_data['Name']}</strong>".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $theme_data['Version'], $latest->version, $latest->requires)."</td>
-								</tr>";
+										echo "<tr class='active'>
+										<th scope='row' class='check-column'><input type='checkbox' name='checked[]' value='".esc_attr($theme_file)."' /></th>
+										<td class='plugin-title'><img src='$screenshot' width='64' height='64' style='float:left; padding: 5px' /><strong>{$theme_data['Name']}</strong>".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $theme_data['Version'], $latest->version, $latest->requires)."</td></tr>";
 										$data = new stdClass;
 										$data->slug = $theme_file;
 										$data->stylesheet = $theme_data['Stylesheet'];

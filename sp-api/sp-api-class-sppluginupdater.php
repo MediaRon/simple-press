@@ -57,7 +57,6 @@ class SPPluginUpdater {
 	 */
 	public function init() {
 		
-		add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 10, 3 );
 		add_action( 'admin_init', array( $this, 'show_changelog' ) );
 
 	}
@@ -130,7 +129,9 @@ class SPPluginUpdater {
 		}else{
 			
 			$addon_info = json_decode(wp_remote_retrieve_body( $response ));
+			
 			$addon_info->item_name = sanitize_title_with_dashes($addon_info->item_name);
+			
 			$update_info_option = json_encode($addon_info);
 			
 			$check_version = $this->check_for_addon_update();
@@ -141,9 +142,12 @@ class SPPluginUpdater {
 				'name'=>isset( $check_version->name ) ? sanitize_title_with_dashes($check_version->name) : '',
 				'slug'=>isset( $check_version->slug ) ? $check_version->slug : '',
 				'url'=>isset( $check_version->url ) ? $check_version->url : '',
+				'homepage'=>isset( $check_version->homepage ) ? $check_version->homepage : '',
 				'last_updated'=>isset( $check_version->last_updated ) ? $check_version->last_updated : '',
 				'download_link'=>isset( $check_version->download_link ) ? $check_version->download_link : '',
-				'icons'=>isset( $check_version->icons ) ? $check_version->icons : ''
+				'icons'=>isset( $check_version->icons ) ? $check_version->icons : '',
+				'banners'=>isset( $check_version->banners ) ? $check_version->banners : '',
+				'sections'=>isset( $check_version->sections ) ? $check_version->sections : ''
 				);
 			
 			if(isset($license_data->license)) {
@@ -158,49 +162,6 @@ class SPPluginUpdater {
 				SP()->options->update( $data['update_version_option'], json_encode($update_version_option) );
 			}
 		}
-	}
-
-	/**
-	 * Updates information on the "View version x.x details" page with custom data.
-	 *
-	 * @uses api_request()
-	 *
-	 * @param mixed   $_data
-	 * @param string  $_action
-	 * @param object  $_args
-	 * @return object $_data
-	 */
-	function plugins_api_filter( $_data, $_action = '', $_args = null ) {
-
-
-		if ( $_action != 'plugin_information' ) {
-
-			return $_data;
-
-		}
-
-		if ( ! isset( $_args->slug ) || ( $_args->slug != $this->slug ) ) {
-
-			return $_data;
-
-		}
-
-		$to_send = array(
-			'slug'   => $this->slug,
-			'is_ssl' => is_ssl(),
-			'fields' => array(
-				'banners' => false, // These will be supported soon hopefully
-				'reviews' => false
-			)
-		);
-
-		$api_response = $this->api_request( 'plugin_information', $to_send );
-
-		if ( false !== $api_response ) {
-			$_data = $api_response;
-		}
-
-		return $_data;
 	}
 
 	/**
