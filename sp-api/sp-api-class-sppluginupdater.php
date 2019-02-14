@@ -47,19 +47,6 @@ class SPPluginUpdater {
 		$this->init();
 
 	}
-
-	/**
-	 * Set up WordPress filters to hook into WP's update process.
-	 *
-	 * @uses add_filter()
-	 *
-	 * @return void
-	 */
-	public function init() {
-		
-		add_action( 'admin_init', array( $this, 'show_changelog' ) );
-
-	}
 	
 	/**
 	 * Makes a call to the API.
@@ -75,7 +62,7 @@ class SPPluginUpdater {
 		 
 		$response = wp_remote_get(
 			esc_url_raw( add_query_arg( $api_params, $this->api_url ) ),
-			array( 'timeout' => 15, 'sslverify' => false )
+			array( 'timeout' => 15, 'sslverify' => true )
 		);
 
 		// Make sure the response came back okay.
@@ -112,7 +99,7 @@ class SPPluginUpdater {
 	{
 		$this->api_data['edd_action'] = $data['edd_action'];
 		
-		$response = wp_remote_post( $this->api_url, array( 'timeout' => 15, 'sslverify' => false, 'body' => $this->api_data ) );
+		$response = wp_remote_post( $this->api_url, array( 'timeout' => 15, 'sslverify' => true, 'body' => $this->api_data ) );
 		
 		// make sure the response came back okay
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
@@ -216,7 +203,7 @@ class SPPluginUpdater {
 			'url'        => home_url()
 		);
 
-		$request = wp_remote_post( $this->api_url, array( 'timeout' => 15, 'sslverify' => false, 'body' => $api_params ) );
+		$request = wp_remote_post( $this->api_url, array( 'timeout' => 15, 'sslverify' => true, 'body' => $api_params ) );
 
 		if ( ! is_wp_error( $request ) ) {
 			$request = json_decode( wp_remote_retrieve_body( $request ) );
@@ -229,34 +216,6 @@ class SPPluginUpdater {
 		}
 
 		return $request;
-	}
-
-	public function show_changelog() {
-
-
-		if( empty( $_REQUEST['edd_sl_action'] ) || 'view_plugin_changelog' != $_REQUEST['edd_sl_action'] ) {
-			return;
-		}
-
-		if( empty( $_REQUEST['plugin'] ) ) {
-			return;
-		}
-
-		if( empty( $_REQUEST['slug'] ) ) {
-			return;
-		}
-
-		if( ! current_user_can( 'update_plugins' ) ) {
-			wp_die( __( 'You do not have permission to install plugin updates', 'SP' ), __( 'Error', 'SP' ), array( 'response' => 403 ) );
-		}
-
-		$response = $this->api_request( 'plugin_latest_version', array( 'slug' => $_REQUEST['slug'] ) );
-
-		if( $response && isset( $response->sections['changelog'] ) ) {
-			echo '<div style="background:#fff;padding:10px;">' . $response->sections['changelog'] . '</div>';
-		}
-
-		exit;
 	}
 
 }
