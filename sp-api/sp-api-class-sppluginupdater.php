@@ -43,9 +43,6 @@ class SPPluginUpdater {
 		$this->beta        = ! empty( $this->api_data['beta'] ) ? true : false;
 		$this->API_action   = ! empty( $_api_data['API_action'] ) ? $_api_data['API_action'] : false;
 
-		// Set up hooks.
-		$this->init();
-
 	}
 	
 	/**

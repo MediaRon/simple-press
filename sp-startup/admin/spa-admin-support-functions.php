@@ -631,10 +631,10 @@ function spa_remove_news() {
  *
  */
 
-if ( ! function_exists( 'object_sp_plugin' ) ) {
+if ( ! function_exists( 'object_admin_sp_plugin' ) ) {
 	
-	function object_sp_plugin($plugin_file, $plugin_data){
-		
+	function object_admin_sp_plugin($plugin_file, $plugin_data){
+
 		$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
 		$get_key = SP()->options->get( 'plugin_'.$sp_plugin_name);
 			
@@ -657,16 +657,16 @@ if ( ! function_exists( 'object_sp_plugin' ) ) {
 			$api_data['item_id'] = $plugin_data['ItemId'];  // id of this plugin
 		}
 		
-		$sp_plugin_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $this_path, $api_data);
+		$sp_plugin_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $plugin_file, $api_data);
 		
 		return $sp_plugin_updater;
 	}
 }
 
-if ( ! function_exists( 'object_sp_theme' ) ) {
+if ( ! function_exists( 'object_admin_sp_theme' ) ) {
 	
 	
-	function object_sp_theme($theme_file, $theme_data){
+	function object_admin_sp_theme($theme_file, $theme_data){
 		
 		$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
 		
@@ -691,7 +691,7 @@ if ( ! function_exists( 'object_sp_theme' ) ) {
 			$api_data['item_id'] = $theme_data['ItemId'];  // id of this plugin
 		}
 		
-		$sp_theme_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $this_path, $api_data);
+		$sp_theme_updater = new SPPluginUpdater( SP_Addon_STORE_URL, $theme_file, $api_data);
 		
 		return $sp_theme_updater;
 	}
@@ -717,6 +717,12 @@ function spl_plugin_changelog($_data, $_action = '', $_args = null ){
 			$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.$_args->slug);
 	
 			$_data = json_decode($check_for_addon_update);
+			
+			
+			if ( $_data && isset( $_data->name ) ) {
+				
+				$_data->name = $plugin_data['Name'];
+			}
 			
 			if ( $_data && isset( $_data->sections ) ) {
 				
@@ -752,6 +758,10 @@ function spl_plugin_changelog($_data, $_action = '', $_args = null ){
 	
 			$_data = json_decode($check_for_addon_update);
 			
+			if ( $_data && isset( $_data->name ) ) {
+				
+				$_data->name = $theme_data['Name'];
+			}
 			
 			if ( $_data && isset( $_data->sections ) ) {
 				
@@ -913,7 +923,6 @@ function check_for_plugin_addon_update() {
 			$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.$sp_plugin_name);
 			$check_addons_status = SP()->options->get( 'spl_plugin_info_'.$sp_plugin_name);
 			
-			
 			if($check_for_addon_update != '' && $check_addons_status != ''){
 				
 				$check_for_addon_update = json_decode($check_for_addon_update);
@@ -921,10 +930,11 @@ function check_for_plugin_addon_update() {
 				
 			}else{
 				
-				$sp_plugin_updater = object_sp_plugin($plugin_file, $plugin_data);
+				$sp_plugin_updater = object_admin_sp_plugin($plugin_file, $plugin_data);
 				$check_for_addon_update = $sp_plugin_updater->check_for_addon_update();
 				$data = array('edd_action' => 'check_license', 'status'=> 1);
 				$check_addons_status = $sp_plugin_updater->check_addons_status($data);
+				
 			}
 			
 			$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
@@ -1075,7 +1085,7 @@ function check_for_theme_addon_update(){
 				
 			}else{
 				
-				$sp_theme_updater = object_sp_theme($theme_file, $theme_data);
+				$sp_theme_updater = object_admin_sp_theme($theme_file, $theme_data);
 				$check_for_addon_update = $sp_theme_updater->check_for_addon_update();
 				$data = array('edd_action' => 'check_license', 'status'=> 1);
 				$check_addons_status = $sp_theme_updater->check_addons_status($data);
