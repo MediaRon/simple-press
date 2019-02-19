@@ -715,32 +715,27 @@ function spa_addons_changelog($_data, $_action = '', $_args = null ){
 		if (!empty($plugins) && isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != '' && $sp_plugin_name === $_args->slug) {
 			
 			$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.$_args->slug);
-	
+
 			$_data = json_decode($check_for_addon_update);
 			
-			
 			if ( $_data && isset( $_data->name ) ) {
-				
 				$_data->name = $plugin_data['Name'];
+			}
+
+			if ( $_data && isset( $_data->download_link ) ) {
+				$_data->download_link = '';
 			}
 			
 			if ( $_data && isset( $_data->sections ) ) {
-				
 				$_data->sections = maybe_unserialize( $_data->sections );
-				
 			} else {
-				
 				$_data = false;
 			}
 			
-			
-			if ( $_data && isset( $_data->banners ) ) {
-				
+			if ( $_data && isset( $_data->banners ) ) {	
 				$_data->banners = maybe_unserialize( $_data->banners );
 			}
-			
-			return $_data;
-					
+			return $_data;			
 		}
 	}
 	
@@ -750,41 +745,33 @@ function spa_addons_changelog($_data, $_action = '', $_args = null ){
 		
 		$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
 			
-		
 		if (!empty($themes) && isset($theme_data['ItemId']) && $theme_data['ItemId'] != '' && $sp_theme_name === $_args->slug) {
-			
 			
 			$check_for_addon_update = SP()->options->get( 'spl_theme_versioninfo_'.$sp_theme_name);
 	
 			$_data = json_decode($check_for_addon_update);
 			
 			if ( $_data && isset( $_data->name ) ) {
-				
 				$_data->name = $theme_data['Name'];
+			}
+
+			if ( $_data && isset( $_data->download_link ) ) {
+				$_data->download_link = '';
 			}
 			
 			if ( $_data && isset( $_data->sections ) ) {
-				
 				$_data->sections = maybe_unserialize( $_data->sections );
-				
 			} else {
-				
 				$_data = false;
 			}
 			
-			
 			if ( $_data && isset( $_data->banners ) ) {
-				
 				$_data->banners = maybe_unserialize( $_data->banners );
 			}
-			
-			return $_data;
-					
+			return $_data;		
 		}
 	}
-	
-	return $_data;
-	
+	return $_data;	
 }
 
 /**
@@ -1176,7 +1163,7 @@ function spa_check_theme_addon_update(){
 											<?php
 											$header = false;
 										}
-										$screenshot = SPTHEMEBASEURL.$file.'/'.$theme_data['Screenshot'];
+										$screenshot = SPTHEMEBASEURL.$theme_file.'/'.$theme_data['Screenshot'];
 										echo "<tr class='active'>
 										<th scope='row' class='check-column'><input type='checkbox' name='checked[]' value='".esc_attr($theme_file)."' /></th>
 										<td class='plugin-title'><img src='$screenshot' width='64' height='64' style='float:left; padding: 5px' /><strong>{$theme_data['Name']}</strong>".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $theme_data['Version'], $latest->version, $latest->requires)."</td></tr>";

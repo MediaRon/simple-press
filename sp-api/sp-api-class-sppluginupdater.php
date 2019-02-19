@@ -140,6 +140,7 @@ class SPPluginUpdater {
 					'homepage'=>isset( $check_version->homepage ) ? $check_version->homepage : '',
 					'last_updated'=>isset( $check_version->last_updated ) ? $check_version->last_updated : '',
 					'download_link'=> $download_link,
+					'package' => isset( $check_version->package ) ? $check_version->package : '',
 					'icons'=>isset( $check_version->icons ) ? $check_version->icons : '',
 					'banners'=>isset( $check_version->banners ) ? $check_version->banners : '',
 					'sections'=>isset( $check_version->sections ) ? $check_version->sections : ''

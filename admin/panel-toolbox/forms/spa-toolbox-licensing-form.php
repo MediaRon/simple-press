@@ -11,12 +11,13 @@ if (preg_match('#'.basename(__FILE__).'#', $_SERVER['PHP_SELF'])) die('Access de
 function spa_toolbox_licensing_form() {
 	
 	$ajaxURLPlugn = wp_nonce_url(SPAJAXURL.'toolbox-loader&amp;saveform=licensing', 'toolbox-loader');
-	
 	$ajaxURThem = wp_nonce_url(SPAJAXURL.'license-check&amp;saveform=licence_them', 'license-check');
-	
+
 	$plugins = SP()->plugin->get_list();
-	
 	$themes = SP()->theme->get_list();
+
+	$count_plugins = 0;
+	$count_themes = 0;
 	
 	spa_paint_options_init();
 	spa_paint_open_tab(SP()->primitives->admin_text('Toolbox').' - '.SP()->primitives->admin_text('Licensing'), true);
@@ -32,18 +33,15 @@ function spa_toolbox_licensing_form() {
 			
 			$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
 			
-			$get_key = SP()->options->get( 'plugin_'.$sp_plugin_name);
-			
-			$license_status = SP()->options->get('spl_plugin_stats_'.$sp_plugin_name);
-			
-			$license_info 	= SP()->options->get('spl_plugin_info_'.$sp_plugin_name);
-				
-			$license_info	= json_decode($license_info);
-			
 			if ($sp_plugin_name && $sp_plugin_name != '') {
 				
+				$count_plugins++;
+				$get_key = SP()->options->get( 'plugin_'.$sp_plugin_name);
+				$license_status = SP()->options->get('spl_plugin_stats_'.$sp_plugin_name);
+				$license_info 	= SP()->options->get('spl_plugin_info_'.$sp_plugin_name);
+				$license_info	= json_decode($license_info);
+
 				$button_id 	= $sp_plugin_name;
-				
 				$total_days = -1;
 				
 				if(isset($license_info) && $license_info != '' && isset($license_info->expires)){
@@ -149,6 +147,16 @@ function spa_toolbox_licensing_form() {
 	
 		}
 	}
+
+	if($count_plugins < 1){
+
+		echo '<table class="form-table">';
+		echo '<tr valign="top">';
+		echo '<div class="sfoptionerror" style="margin-left: 0px;">There are no items activated that require a license key at this time</div>';
+		echo '</tr>';
+		echo '</table>';	
+	}
+	
 	
 	spa_paint_close_fieldset();
 	spa_paint_close_panel();
@@ -159,16 +167,17 @@ function spa_toolbox_licensing_form() {
 	foreach ($themes as $theme_file => $theme_data) {
 		
 		$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
-
-		$get_key = SP()->options->get( 'theme_'.$sp_theme_name);
-		$license_status = SP()->options->get('spl_theme_stats_'.$sp_theme_name);
-		$license_info 	= SP()->options->get('spl_theme_info_'.$sp_theme_name);
-		$license_info	= json_decode($license_info);
-			
+		
 		if ($sp_theme_name && $sp_theme_name != '' && isset($theme_data['ItemId']) && $theme_data['ItemId'] != '') {
 			
+			$get_key = SP()->options->get( 'theme_'.$sp_theme_name);
+			$license_status = SP()->options->get('spl_theme_stats_'.$sp_theme_name);
+			$license_info 	= SP()->options->get('spl_theme_info_'.$sp_theme_name);
+			$license_info	= json_decode($license_info);
+
 			$button_id 	= $sp_theme_name;
 			$total_days = -1;
+			$count_themes++;
 			
 			if(isset($license_info) && $license_info != '' && isset($license_info->expires)){
 				
@@ -270,11 +279,20 @@ function spa_toolbox_licensing_form() {
 		}
 	}
 	
+	if($count_themes < 1){
+
+		echo '<table class="form-table">';
+		echo '<tr valign="top">';
+		echo '<div class="sfoptionerror" style="margin-left: 0px;">There are no items activated that require a license key at this time</div>';
+		echo '</tr>';
+		echo '</table>';	
+	}
+	
 	spa_paint_close_fieldset();
 	spa_paint_close_panel();
 	
 	spa_paint_open_panel();
-	spa_paint_open_fieldset(SP()->primitives->admin_text('Steps to Activate the License'), true, 'plugins-licensing');
+	spa_paint_open_fieldset(SP()->primitives->admin_text('Steps to Activate the License'), true, 'steps-activate-licensing');
 	$sp_addon_store_url = SP()->options->get( 'sp_addon_store_url');
 	
 	echo '<form class="url_global" style="margin:0px 0px 30px 0px;">';
@@ -289,24 +307,18 @@ function spa_toolbox_licensing_form() {
 	</div>';
 	echo '</form>';
 	echo '<div class="sfoptionerror" style="margin-left: 0px;">Note: If you do not activate the license then you will not get automatic update of this plugin any more.</div>';
-	
 	echo '<ul class="licensing_note_list">';
 	echo '<li><strong>Step 1:</strong> Enter your license key into &#39;License Key&#39; field and press &#39;Save Changes&#39; button.</li>';
 	echo '<li><strong>Step 2:</strong> After save changes you can see an another button named &#39;Activate License&#39;.</li>';
 	echo '<li><strong>Step 3:</strong> Press &#39;Activate License&#39;. If your key is valid then you can see green &#39;Active&#39; text.</li>';
 	echo '<li><strong>Step 4:</strong> Thats it. Now you can get auto update of this plugin.</li>';
 	echo '</ul>';
-	
 	echo 'Note : If your license key has expired, please renew your license from Account Page.';
 	
 	spa_paint_close_fieldset();
 	spa_paint_close_panel();
-	
 	spa_paint_close_container();
-	
 	echo '<div class="sfform-panel-spacer"></div>';
-	
 	spa_paint_close_tab();
-	
 	}
 ?>
