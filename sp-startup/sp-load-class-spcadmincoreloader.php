@@ -173,11 +173,11 @@ class spcAdminCoreLoader {
 		
 		add_action('wp_dashboard_setup', 'spa_dashboard_addon_news_setup', 1);
 		
-		add_action('core_upgrade_preamble', 'check_for_plugin_addon_update' );
+		add_action('core_upgrade_preamble', 'spa_check_plugin_addon_update' );
 		
-		add_action('core_upgrade_preamble', 'check_for_theme_addon_update' );
+		add_action('core_upgrade_preamble', 'spa_check_theme_addon_update' );
 		
-		add_filter( 'plugins_api', 'spl_plugin_changelog', 10, 3 );
+		add_filter( 'plugins_api', 'spa_addons_changelog', 10, 3 );
 		
 	}
 

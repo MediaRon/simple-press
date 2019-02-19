@@ -119,22 +119,31 @@ class SPPluginUpdater {
 			$update_info_option = json_encode($addon_info);
 			
 			$check_version = $this->check_for_addon_update();
-			
-			$update_version_option = array(
-				'new_version'=> isset( $check_version->new_version ) ? $check_version->new_version : '',
-				'stable_version'=> isset( $check_version->stable_version ) ? $check_version->stable_version : '',
-				'name'=>isset( $check_version->name ) ? sanitize_title_with_dashes($check_version->name) : '',
-				'slug'=>isset( $check_version->slug ) ? $check_version->slug : '',
-				'url'=>isset( $check_version->url ) ? $check_version->url : '',
-				'homepage'=>isset( $check_version->homepage ) ? $check_version->homepage : '',
-				'last_updated'=>isset( $check_version->last_updated ) ? $check_version->last_updated : '',
-				'download_link'=>isset( $check_version->download_link ) ? $check_version->download_link : '',
-				'icons'=>isset( $check_version->icons ) ? $check_version->icons : '',
-				'banners'=>isset( $check_version->banners ) ? $check_version->banners : '',
-				'sections'=>isset( $check_version->sections ) ? $check_version->sections : ''
-				);
-			
+
 			if(isset($license_data->license)) {
+
+				if($license_data->license != 'expired'){
+
+					$download_link = isset( $check_version->download_link ) ? $check_version->download_link : '';
+				}else{
+
+					$download_link = '';
+				}
+			
+				$update_version_option = array(
+					
+					'new_version'=> isset( $check_version->new_version ) ? $check_version->new_version : '',
+					'stable_version'=> isset( $check_version->stable_version ) ? $check_version->stable_version : '',
+					'name'=>isset( $check_version->name ) ? sanitize_title_with_dashes($check_version->name) : '',
+					'slug'=>isset( $check_version->slug ) ? $check_version->slug : '',
+					'url'=>isset( $check_version->url ) ? $check_version->url : '',
+					'homepage'=>isset( $check_version->homepage ) ? $check_version->homepage : '',
+					'last_updated'=>isset( $check_version->last_updated ) ? $check_version->last_updated : '',
+					'download_link'=> $download_link,
+					'icons'=>isset( $check_version->icons ) ? $check_version->icons : '',
+					'banners'=>isset( $check_version->banners ) ? $check_version->banners : '',
+					'sections'=>isset( $check_version->sections ) ? $check_version->sections : ''
+				);
 			
 				// save status to option table
 				SP()->options->update( $data['update_status_option'], $license_data->license );

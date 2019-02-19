@@ -857,11 +857,11 @@ function sp_compile_forums_mobile($forums, $parent = 0, $level = 0, $valueURL = 
 	return $out;
 }
 
-function spl_ten_minutes_cron_interval( $schedules ) {
+function sp_ten_minutes_interval( $schedules ) {
 	
     $schedules['ten_minutes'] = array(
     
-        'interval' => 60 * 2,
+        'interval' => 60 * 10,
         'display'  => esc_html__( 'Every Ten Minutes' ),
     );
  
@@ -873,9 +873,9 @@ function spl_ten_minutes_cron_interval( $schedules ) {
  *
  */
 
-if ( ! function_exists( 'object_sp_plugin' ) ) {
+if ( ! function_exists( 'sp_plugin_updater_object' ) ) {
 	
-	function object_sp_plugin($plugin_file, $plugin_data){
+	function sp_plugin_updater_object($plugin_file, $plugin_data){
 		
 		$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
 		$get_key = SP()->options->get( 'plugin_'.$sp_plugin_name);
@@ -905,10 +905,10 @@ if ( ! function_exists( 'object_sp_plugin' ) ) {
 	}
 }
 
-if ( ! function_exists( 'object_sp_theme' ) ) {
+if ( ! function_exists( 'sp_theme_updater_object' ) ) {
 	
 	
-	function object_sp_theme($theme_file, $theme_data){
+	function sp_theme_updater_object($theme_file, $theme_data){
 		
 		$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
 		$get_key = SP()->options->get( 'theme_'.$sp_theme_name);
@@ -938,7 +938,7 @@ if ( ! function_exists( 'object_sp_theme' ) ) {
 	}
 }
 
-function sp_check_addons_status(){
+function sph_check_addons_status(){
 	
 	$plugins = SP()->plugin->get_list();
 	
@@ -952,7 +952,7 @@ function sp_check_addons_status(){
 				
 			if(isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != ''){
 				
-				$sp_plugin_updater = object_sp_plugin($plugin_file, $plugin_data);
+				$sp_plugin_updater = sp_plugin_updater_object($plugin_file, $plugin_data);
 
 				$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);			
 				$update_status_option 	= 'spl_plugin_stats_'.$sp_plugin_name;
@@ -979,7 +979,7 @@ function sp_check_addons_status(){
 			
 			if(isset($theme_data['ItemId']) && $theme_data['ItemId'] != ''){
 			
-				$sp_theme_updater = object_sp_theme($theme_file, $theme_data);
+				$sp_theme_updater = sp_theme_updater_object($theme_file, $theme_data);
 				
 				$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
 				$update_status_option 	= 'spl_theme_stats_'.$sp_theme_name;
@@ -1000,7 +1000,7 @@ function sp_check_addons_status(){
  * This function determines if there is an update available to the core Simple Press plugins and notify to admin.
  *
  */
-function check_for_sp_addons_updates() {
+function sph_check_for_addons_updates() {
 	
 	$plugins = SP()->plugin->get_list();
 	
@@ -1018,7 +1018,7 @@ function check_for_sp_addons_updates() {
 			
 			$up = new stdClass;
 			
-			$sp_plugin_updater = object_sp_plugin($plugin_file, $plugin_data);
+			$sp_plugin_updater = sp_plugin_updater_object($plugin_file, $plugin_data);
 			
 			$check_for_addon_update = $sp_plugin_updater->check_for_addon_update();
 			
@@ -1054,7 +1054,7 @@ function check_for_sp_addons_updates() {
 			
 			$this_path = realpath(SP_STORE_DIR.'/'.SP()->plugin->storage['themes']).'/'.$theme_file;
 				
-			$sp_theme_updater = object_sp_theme($theme_file, $theme_data);
+			$sp_theme_updater = sp_theme_updater_object($theme_file, $theme_data);
 			
 			$check_for_addon_update = $sp_theme_updater->check_for_addon_update();
 			

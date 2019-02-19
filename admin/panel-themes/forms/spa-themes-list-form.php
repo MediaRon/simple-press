@@ -28,6 +28,8 @@ function spa_themes_list_form() {
 	echo '</div>';
 
 	spa_paint_open_fieldset(SP()->primitives->admin_text('Theme Management'), true, 'themes');
+        
+        $ajaxURThem = wp_nonce_url(SPAJAXURL.'license-check', 'license-check');
 ?>
 	<h3><?php echo SP()->primitives->admin_text('Current Theme'); ?></h3>
 	<div class="theme-browser rendered">
@@ -71,7 +73,7 @@ function spa_themes_list_form() {
             if (!empty($overlays)) {
 ?>
                 <script>
-					spj.loadAjaxForm('sftheme-<?php echo esc_js($curTheme['theme']); ?>', 'sfreloadtlist');
+                        spj.loadAjaxForm('sftheme-<?php echo esc_js($curTheme['theme']); ?>', 'sfreloadtlist');
                 </script>
                 <br />
 <?php
@@ -119,35 +121,38 @@ function spa_themes_list_form() {
 				$check_addons_status = SP()->options->get( 'spl_theme_info_'.$sp_theme_name);
 				
 				$check_addons_status = json_decode($check_addons_status);
+                                
 				
 				$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-				$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
+				$status_condition = $check_addons_status != '' && isset($check_addons_status->license);
 
 				$version_compare = (version_compare($check_for_addon_update->new_version, $themes[$curTheme['theme']]['Version'], '>') == 1);
 			
-				if (is_main_site() && $update_condition && $satatus_condition && $version_compare) {
+				if (is_main_site() && $update_condition && $status_condition && $version_compare) {
 					
 					$changelog_link = add_query_arg( array( 'tab' => 'plugin-information', 'plugin' => $sp_theme_name, 'section' => 'changelog', 'TB_iframe' => true, 'width' => 722, 'height' => 949 ), admin_url( 'plugin-install.php' ) );
-					
+                                        
 					echo '<br />';
 					
 					if($check_addons_status->license == 'valid'){
 						
 						printf(
-							__( '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</div></div>', 'SP' ),
+							__( '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%5$s" data-label="Simple:Press Theme Update" data-href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</div></div>', 'SP' ),
 							esc_html( esc_attr($curTheme['theme']) ),
 							esc_url( $changelog_link ),
 							esc_html( $check_for_addon_update->new_version ),
-							esc_url( self_admin_url('update-core.php') )
+							esc_url( self_admin_url('update-core.php') ),
+                            esc_html( $ajaxURThem )
 						);
 						
 					} else{
 						
 						printf(
-							__( '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</div></div>', 'SP' ),
+							__( '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%4$s" data-label="Simple:Press Theme Update" data-href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</div></div>', 'SP' ),
 							esc_html( esc_attr($curTheme['theme']) ),
 							esc_url( $changelog_link ),
-							esc_html( $check_for_addon_update->new_version )
+							esc_html( $check_for_addon_update->new_version ),
+                            esc_html( $ajaxURThem )
 						);
 					}
 				}
@@ -276,10 +281,10 @@ function spa_themes_list_form() {
 						$check_addons_status = SP()->options->get( 'spl_theme_info_'.$sp_theme_name);
 						$check_addons_status = json_decode($check_addons_status);
 						$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-						$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
+						$status_condition = $check_addons_status != '' && isset($check_addons_status->license);
 						$version_compare = (version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1);
 					
-						if (is_main_site() && $update_condition && $satatus_condition && $version_compare) {
+						if (is_main_site() && $update_condition && $status_condition && $version_compare) {
 							
 							$changelog_link = add_query_arg( array( 'tab' => 'plugin-information', 'plugin' => $sp_theme_name, 'section' => 'changelog', 'TB_iframe' => true, 'width' => 722, 'height' => 949 ), admin_url( 'plugin-install.php' ) );
 							
@@ -289,20 +294,22 @@ function spa_themes_list_form() {
 							if($check_addons_status->license == 'valid'){
 								
 	        					printf(
-									__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
+									__( '<p>There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%5$s" data-label="Simple:Press Theme Update" data-href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
 									esc_html( $theme_data['Name'] ),
 									esc_url( $changelog_link ),
 									esc_html( $check_for_addon_update->new_version ),
-									esc_url( self_admin_url('update-core.php') )
+									esc_url( self_admin_url('update-core.php') ),
+									esc_html( $ajaxURThem )
 								);
 								
 	        				} else{
 	        					
 	        					printf(
-									__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</p>', 'SP' ),
+									__( '<p>There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%4$s" data-label="Simple:Press Theme Update" data-href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</p>', 'SP' ),
 									esc_html( $theme_data['Name'] ),
 									esc_url( $changelog_link ),
-									esc_html( $check_for_addon_update->new_version )
+									esc_html( $check_for_addon_update->new_version ),
+									esc_html( $ajaxURThem )
 								);
 	        				}
 							echo '</div></div>';

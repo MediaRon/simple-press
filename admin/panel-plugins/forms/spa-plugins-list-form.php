@@ -72,8 +72,7 @@ function spa_plugins_list_form() {
     		echo '<div id="message" class="error"><p>'.sprintf(SP()->primitives->admin_text('The plugin %1$s has been deactivated due to error: %2$s'), esc_html($plugin_file), $error->get_error_message()).'</p></div>';
         }
     }
-
-    $ajaxURL = wp_nonce_url(SPAJAXURL.'plugins-loader&amp;saveform=list', 'plugins-loader');
+        $ajaxURL = wp_nonce_url(SPAJAXURL.'plugins-loader&amp;saveform=list', 'plugins-loader');
 	$msg = esc_js(SP()->primitives->admin_text('Are you sure you want to delete the selected Simple Press plugins?'));
 ?>
 	<form action="<?php echo $ajaxURL; ?>" method="post" id="sppluginsform" name="sppluginsform" onsubmit="javascript: if (ActionType.options[ActionType.selectedIndex].value == 'delete-selected' || ActionType2.options[ActionType2.selectedIndex].value == 'delete-selected') {if (confirm('<?php echo $msg; ?>')) {return true;} else {return false;}} else {return true;}">
@@ -234,41 +233,47 @@ function spa_plugins_list_form() {
 				$check_addons_status = json_decode($check_addons_status);
 				
 				$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-				$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license);
+				$status_condition = $check_addons_status != '' && isset($check_addons_status->license);
 
 				$version_compare = (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1);
+                                
+                                
 				
-				if (is_main_site() && $update_condition && $satatus_condition && $version_compare) {
+				if (is_main_site() && $update_condition && $status_condition && $version_compare) {
 					
-					$changelog_link = add_query_arg( array( 'tab' => 'plugin-information', 'plugin' => $sp_plugin_name, 'section' => 'changelog', 'TB_iframe' => true, 'width' => 722, 'height' => 949 ), admin_url( 'plugin-install.php' ) );
+                                    $changelog_link = add_query_arg( array( 'tab' => 'plugin-information', 'plugin' => $sp_plugin_name, 'section' => 'changelog', 'TB_iframe' => true, 'width' => 722, 'height' => 949 ), admin_url( 'plugin-install.php' ) );
+
+                                    $ajaxURThem = wp_nonce_url(SPAJAXURL.'license-check', 'license-check');
 					
 ?>
-					<tr class='<?php echo $rowClass; ?>'>
-		        		<td></td>
-		        		<td class="plugin-update colspanchange" colspan="3">
-		        			<div class="update-message notice inline notice-warning notice-alt">
-		        				<?php if($check_addons_status->license == 'valid'){
-		        					
-		        					printf(
-										__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox open-plugin-details-modal" href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
-										esc_html( $plugin_data['Name'] ),
-										esc_url( esc_url( $changelog_link ) ),
-										esc_html( $check_for_addon_update->new_version ),
-										esc_url( self_admin_url('update-core.php') )
-									);
-		        					
-		        				} else{
-		        						
-		        					printf(
-										__( '<p>There is a new version of %1$s available. <a target="_blank" class="thickbox open-plugin-details-modal" href="%2$s">View version %3$s details</a> Automatic update is unavailable for this plugin.</p>', 'SP' ),
-										esc_html( $plugin_data['Name'] ),
-										esc_url( esc_url( $changelog_link ) ),
-										esc_html( $check_for_addon_update->new_version )
-									);
-									
-		        				 } ?>
-		        			</div>
-		        		</td>
+                                    <tr class='<?php echo $rowClass; ?>'>
+                                    <td></td>
+                                    <td class="plugin-update colspanchange" colspan="3">
+                                        <div class="update-message notice inline notice-warning notice-alt">
+                                            <?php if($check_addons_status->license == 'valid'){
+
+                                                    printf(
+                                                            __( '<p>There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%5$s" data-label="Simple:Press Plugin Update" data-href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
+                                                            esc_html( $plugin_data['Name'] ),
+                                                            esc_url( esc_url( $changelog_link ) ),
+                                                            esc_html( $check_for_addon_update->new_version ),
+                                                            esc_url( self_admin_url('update-core.php') ),
+                                                            esc_html( $ajaxURThem )
+                                                    );
+
+                                            } else{
+
+                                                    printf(
+                                                            __( '<p>There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%4$s" data-label="Simple:Press Plugin Update" data-href="%2$s">View version %3$s details</a> Automatic update is unavailable for this plugin.</p>', 'SP' ),
+                                                            esc_html( $plugin_data['Name'] ),
+                                                            esc_url( esc_url( $changelog_link ) ),
+                                                            esc_html( $check_for_addon_update->new_version ),
+                                                            esc_html( $ajaxURThem )
+                                                    );
+
+                                             } ?>
+                                        </div>
+                                    </td>
 		        	</tr>
 <?php }
 				

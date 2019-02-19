@@ -217,8 +217,8 @@ function spa_activate_plugin() {
 		if ($sfuser['sfuserremove']) wp_schedule_event(time(), 'daily', 'sph_cron_user');
 		
 		# set up daily sp_check_addons_status clean up cron
-		wp_clear_scheduled_hook('sp_check_addons_status_cron');
-		wp_schedule_event(time(), 'ten_minutes', 'sp_check_addons_status_cron');
+		wp_clear_scheduled_hook('sph_check_addons_status_interval');
+		wp_schedule_event(time(), 'ten_minutes', 'sph_check_addons_status_interval');
 
 		SP()->spPermalinks->update_permalink(true);
 	}
@@ -348,7 +348,7 @@ function spa_deactivate_plugin() {
 	wp_clear_scheduled_hook('sph_stats_cron');
 	wp_clear_scheduled_hook('sph_news_cron');
 	
-	wp_clear_scheduled_hook('sp_check_addons_status_cron');
+	wp_clear_scheduled_hook('sph_check_addons_status_interval');
 
 	# send deactivated action
 	if (!$uninstall) do_action('sph_deactivated');
@@ -587,8 +587,8 @@ function spa_dashboard_news() {
 	echo '</div>';
 	echo '<div class="spa_dashboard_text">';
 	echo SP()->displayFilters->text($spNews);
-	sp_plugin_addon_dashboard_update();
-	sp_theme_addon_dashboard_update();
+	spa_plugin_addon_dashboard_update();
+	spa_theme_addon_dashboard_update();
 	echo '</div>';
 	echo '<div style="clear:both;"></div>';
 	echo '<div style="border-top:1px solid #666;margin-top:18px;padding:10px 0;">';
@@ -631,9 +631,9 @@ function spa_remove_news() {
  *
  */
 
-if ( ! function_exists( 'object_admin_sp_plugin' ) ) {
+if ( ! function_exists( 'spa_plugin_updater_object' ) ) {
 	
-	function object_admin_sp_plugin($plugin_file, $plugin_data){
+	function spa_plugin_updater_object($plugin_file, $plugin_data){
 
 		$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
 		$get_key = SP()->options->get( 'plugin_'.$sp_plugin_name);
@@ -663,10 +663,10 @@ if ( ! function_exists( 'object_admin_sp_plugin' ) ) {
 	}
 }
 
-if ( ! function_exists( 'object_admin_sp_theme' ) ) {
+if ( ! function_exists( 'spa_theme_updater_object' ) ) {
 	
 	
-	function object_admin_sp_theme($theme_file, $theme_data){
+	function spa_theme_updater_object($theme_file, $theme_data){
 		
 		$sp_theme_name = sanitize_title_with_dashes($theme_data['Name']);
 		
@@ -697,7 +697,7 @@ if ( ! function_exists( 'object_admin_sp_theme' ) ) {
 	}
 }
 
-function spl_plugin_changelog($_data, $_action = '', $_args = null ){
+function spa_addons_changelog($_data, $_action = '', $_args = null ){
 	
 	
 	if ( $_action != 'plugin_information' ) {
@@ -792,7 +792,7 @@ function spl_plugin_changelog($_data, $_action = '', $_args = null ){
  *
  */
 
-function sp_plugin_addon_dashboard_update()
+function spa_plugin_addon_dashboard_update()
 {
 	
 	$plugins = SP()->plugin->get_list();
@@ -812,9 +812,9 @@ function sp_plugin_addon_dashboard_update()
 				$check_addons_status = json_decode($check_addons_status);
 				
 				$update_condition = isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-				$satatus_condition = isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+				$status_condition = isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
 				
-				if ($update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
+				if ($update_condition && $status_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
 					
 					if ($header) {
 						
@@ -846,7 +846,7 @@ function sp_plugin_addon_dashboard_update()
 	}
 }
 
-function sp_theme_addon_dashboard_update()
+function spa_theme_addon_dashboard_update()
 {
 	$themes = SP()->theme->get_list();
 	$header = true;
@@ -865,9 +865,9 @@ function sp_theme_addon_dashboard_update()
 				$check_addons_status = json_decode($check_addons_status);
 				
 				$update_condition = isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-				$satatus_condition = isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+				$status_condition = isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
 				
-				if ($update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
+				if ($update_condition && $status_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
 				
 					if ($header) {
 						?>
@@ -903,7 +903,7 @@ function sp_theme_addon_dashboard_update()
  *
  */
 
-function check_for_plugin_addon_update() {
+function spa_check_plugin_addon_update() {
 	
 	
 	$plugins = SP()->plugin->get_list();
@@ -930,7 +930,7 @@ function check_for_plugin_addon_update() {
 				
 			}else{
 				
-				$sp_plugin_updater = object_admin_sp_plugin($plugin_file, $plugin_data);
+				$sp_plugin_updater = spa_plugin_updater_object($plugin_file, $plugin_data);
 				$check_for_addon_update = $sp_plugin_updater->check_for_addon_update();
 				$data = array('edd_action' => 'check_license', 'status'=> 1);
 				$check_addons_status = $sp_plugin_updater->check_addons_status($data);
@@ -938,9 +938,9 @@ function check_for_plugin_addon_update() {
 			}
 			
 			$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-			$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+			$status_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
 			
-			if ( $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
+			if ( $update_condition && $status_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
 				
 				if ($header) {
 					
@@ -1060,7 +1060,7 @@ function check_for_plugin_addon_update() {
 	}
 }
 
-function check_for_theme_addon_update(){
+function spa_check_theme_addon_update(){
 	
 	$themes = SP()->theme->get_list();
 	$header = true;
@@ -1085,16 +1085,16 @@ function check_for_theme_addon_update(){
 				
 			}else{
 				
-				$sp_theme_updater = object_admin_sp_theme($theme_file, $theme_data);
+				$sp_theme_updater = spa_theme_updater_object($theme_file, $theme_data);
 				$check_for_addon_update = $sp_theme_updater->check_for_addon_update();
 				$data = array('edd_action' => 'check_license', 'status'=> 1);
 				$check_addons_status = $sp_theme_updater->check_addons_status($data);
 			}
 			
 			$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-			$satatus_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+			$status_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
 			
-			if ( $update_condition && $satatus_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
+			if ( $update_condition && $status_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
 			
 				if ($header) {
 					$form_action = 'update-core.php?action=do-sp-theme-upgrade';

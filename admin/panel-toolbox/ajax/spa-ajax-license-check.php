@@ -27,7 +27,7 @@ $adminhelpfile = 'admin-toolbox';
 if (!SP()->auths->current_user_can('SPF Manage Toolbox')) die();
 
 
-if($_POST['sp_action'] == 'activate_license' || $_POST['sp_action'] == 'deactivate_license'){
+if(isset($_POST['sp_action']) && ($_POST['sp_action'] == 'activate_license' || $_POST['sp_action'] == 'deactivate_license')){
 
 	$license_key = trim( $_POST['licence_key'] );
 	
@@ -200,6 +200,15 @@ if($_POST['sp_action'] == 'activate_license' || $_POST['sp_action'] == 'deactiva
 	$result = array('message'=>$message);
 	
 	echo json_encode($result);
+}
+
+if(isset($_POST['changelog_link']) && $_POST['changelog_link'] != ''){
+    
+    $message =  '<div class="sfhelptext"><iframe src="'.$_POST['changelog_link'].'" height="700" width="100%"></iframe><div class="sfhelptextlogo"><img src="'.SPCOMMONIMAGES.'sp-mini-logo.png" alt="" title="" /></div></div>';
+    
+    $result = array('message'=>$message);
+	
+    echo json_encode($result);
 }
 
 die();

@@ -274,8 +274,7 @@ function spa_toolbox_licensing_form() {
 	spa_paint_close_panel();
 	
 	spa_paint_open_panel();
-	spa_paint_open_fieldset(SP()->primitives->admin_text('Steps to Activate the License'), false);
-	
+	spa_paint_open_fieldset(SP()->primitives->admin_text('Steps to Activate the License'), true, 'plugins-licensing');
 	$sp_addon_store_url = SP()->options->get( 'sp_addon_store_url');
 	
 	echo '<form class="url_global" style="margin:0px 0px 30px 0px;">';
