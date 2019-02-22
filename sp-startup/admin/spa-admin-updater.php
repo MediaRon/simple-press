@@ -3,7 +3,7 @@
  * Admin updater support functions
  * Loads when a user upgrading Simple Press plugins or themes.
  *
- * $LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
+ * $LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
  * $Rev: 15817 $
  */
 if (preg_match('#'.basename(__FILE__).'#', $_SERVER['PHP_SELF'])) die('Access denied - you cannot directly call this file');

@@ -1,3 +1,10 @@
+/* ---------------------------------
+ Simple:Press - Version 5.0
+ Forum Admin Javascript loaded in footer after page loads
+
+ $LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
+ $Rev: 14157 $
+ ------------------------------------ */
 ! function(e, t, s) {
     t(document).ready(function() {
         t("#sfadminmenu").accordion({

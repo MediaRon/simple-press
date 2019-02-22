@@ -2,7 +2,7 @@
 /*
 Simple:Press
 Admin themes desktop
-$LastChangedDate: 2017-12-28 11:37:41 -0600 (Thu, 28 Dec 2017) $
+$LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
 $Rev: 15601 $
 */
 

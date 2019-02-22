@@ -3,7 +3,7 @@
  * Admin support functions
  * Loads for all forum admin pages and provides general support functions across the admin
  *
- * $LastChangedDate: 2018-11-13 20:41:56 -0600 (Tue, 13 Nov 2018) $
+ * $LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
  * $Rev: 15817 $
  */
 if (preg_match('#'.basename(__FILE__).'#', $_SERVER['PHP_SELF'])) die('Access denied - you cannot directly call this file');
@@ -784,10 +784,11 @@ function spa_plugin_addon_dashboard_update()
 	
 	$plugins = SP()->plugin->get_list();
 	$header = true;
+	$xml = sp_load_version_xml();
 	
 	foreach ($plugins as $plugin_file => $plugin_data) {
 		
-		if (!empty($plugins)) {
+		if (!empty($plugins) && isset($plugin_data['ItemId']) && $plugin_data['ItemId'] != '') {
 		
 			$sp_plugin_name = sanitize_title_with_dashes($plugin_data['Name']);
 			$check_for_addon_update = SP()->options->get( 'spl_plugin_versioninfo_'.$sp_plugin_name);
@@ -799,9 +800,9 @@ function spa_plugin_addon_dashboard_update()
 				$check_addons_status = json_decode($check_addons_status);
 				
 				$update_condition = isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-				$status_condition = isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+				$status_condition = isset($check_addons_status->license) && $check_addons_status->license == 'valid';
 				
-				if ($update_condition && $status_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
+				if ($update_condition && $status_condition && (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1)) {
 					
 					if ($header) {
 						
@@ -813,14 +814,37 @@ function spa_plugin_addon_dashboard_update()
 									<?php
 									$header = false;
 					}
-					echo "
-					<tr class='active'>
-					<td><strong>{$plugin_data['Name']}</strong><br />".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $plugin_data['Version'], $check_for_addon_update->new_version, SPVERSION).'</td>
-					</tr>';
+					echo "<tr class='active'><td><strong>{".$plugin_data['Name']."}</strong><br />".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $plugin_data['Version'], $check_for_addon_update->new_version, SPVERSION)."</td>
+					</tr>";
 				}
 			
 			}
 		
+		}else{
+
+			if ($xml) {
+					
+				foreach ($xml->plugins->plugin as $latest) {
+					
+					if ($plugin_data['Name'] == $latest->name) {
+						
+						if ((version_compare($latest->version, $plugin_data['Version'], '>') == 1)) {
+
+							if ($header) {
+								?>
+								<h3 style="margin: 10px 0px 0px 0px;"><?php SP()->primitives->admin_etext('Simple:Press Plugins'); ?></h3>
+								<p><?php SP()->primitives->admin_etext('The following plugins have new versions available.'); ?></p>
+									<table class="widefat" id="update-plugins-table">
+										<tbody class="plugins">
+											<?php
+											$header = false;
+							}
+							echo "<tr class='active'><td><strong>{".$plugin_data['Name']."}</strong><br />".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $plugin_data['Version'], $latest->version, SPVERSION)."</td>
+							</tr>";
+						}
+					}
+				}
+			}
 		}
 		
 	}
@@ -837,6 +861,7 @@ function spa_theme_addon_dashboard_update()
 {
 	$themes = SP()->theme->get_list();
 	$header = true;
+	$xml = sp_load_version_xml();
 	
 	foreach ($themes as $theme_file => $theme_data) {
 		
@@ -852,9 +877,9 @@ function spa_theme_addon_dashboard_update()
 				$check_addons_status = json_decode($check_addons_status);
 				
 				$update_condition = isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-				$status_condition = isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+				$status_condition = isset($check_addons_status->license) && $check_addons_status->license == 'valid';
 				
-				if ($update_condition && $status_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
+				if ($update_condition && $status_condition && (version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1)) {
 				
 					if ($header) {
 						?>
@@ -873,6 +898,31 @@ function spa_theme_addon_dashboard_update()
 				}
 			}
 
+		}else{
+
+			if ($xml) {
+					
+				foreach ($xml->themes->theme as $latest) {
+						
+					if ($theme_data['Name'] == $latest->name) {
+							
+						if ((version_compare($latest->version, $theme_data['Version'], '>') == 1)) {
+
+							if ($header) {
+								?>
+								<h3 style="margin: 10px 0px 0px 0px;"><?php SP()->primitives->admin_etext('Simple:Press Plugins'); ?></h3>
+								<p><?php SP()->primitives->admin_etext('The following plugins have new versions available.'); ?></p>
+									<table class="widefat" id="update-plugins-table">
+										<tbody class="plugins">
+											<?php
+											$header = false;
+							}
+							echo "<tr class='active'><td><strong>{".$theme_data['Name']."}</strong><br />".sprintf(SP()->primitives->admin_text('You have version %1$s installed. Update to %2$s. Requires SP Version %3$s.'), $theme_data['Version'], $latest->version, SPVERSION)."</td>
+							</tr>";
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -898,6 +948,7 @@ function spa_check_plugin_addon_update() {
 	$update = false;
 	$up = new stdClass;
 	$xml = sp_load_version_xml();
+	$plugin_count = 0;
 	
 	foreach ($plugins as $plugin_file => $plugin_data) {
 		
@@ -925,12 +976,13 @@ function spa_check_plugin_addon_update() {
 			}
 			
 			$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-			$status_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+			$status_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license == 'valid';
 			
-			if ( $update_condition && $status_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$plugin_data['Version'], '>') == 1)) {
+			if ( $update_condition && $status_condition && (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1)) {
 				
 				if ($header) {
 					
+					$plugin_count++;
 					$form_action = 'update-core.php?action=do-sp-plugin-upgrade';
 					?>
 					<h3><?php SP()->primitives->admin_etext('Simple:Press Plugins'); ?></h3>
@@ -981,7 +1033,8 @@ function spa_check_plugin_addon_update() {
 						if ((version_compare($latest->version, $plugin_data['Version'], '>') == 1)) {
 								
 							if ($header) {
-							$form_action = 'update-core.php?action=do-sp-plugin-upgrade';
+								$plugin_count++;
+								$form_action = 'update-core.php?action=do-sp-plugin-upgrade';
 							?>
 							<h3><?php SP()->primitives->admin_etext('Simple:Press Plugins'); ?></h3>
 							<p><?php SP()->primitives->admin_etext('The following plugins have new versions available. Check the ones you want to update and then click Update SP Plugin'); ?></p>
@@ -1045,6 +1098,22 @@ function spa_check_plugin_addon_update() {
 		echo '<h3>'.SP()->primitives->admin_text('Simple:Press Plugins').'</h3>';
 		echo '<p>'.SP()->primitives->admin_text('Your SP plugins are all up to date').'</p>';
 	}
+
+	if($plugin_count > 0){
+
+		$sp_news = SP()->meta->get('news', 'news');
+		if (empty($sp_news)) {
+			$sp_news_meta = array('show' => 1, 'news' => 'There is one or more Simple:Press plugin updates available');
+			SP()->meta->add('news', 'news', $sp_news_meta);
+		}else{
+
+			if(!isset($sp_news[0]['meta_value']['news'])){
+				$sp_news[0]['meta_value']['show'] = 1;
+				$sp_news[0]['meta_value']['news'] = 'There is one or more Simple:Press plugin updates available';
+				SP()->meta->update('news', 'news', $sp_news[0]['meta_value'], $sp_news[0]['meta_id']);
+			}
+		}
+	}
 }
 
 function spa_check_theme_addon_update(){
@@ -1054,6 +1123,7 @@ function spa_check_theme_addon_update(){
 	$update = false;
 	$up = new stdClass;
 	$xml = sp_load_version_xml();
+	$plugin_count = 0;
 	
 	foreach ($themes as $theme_file => $theme_data) {
 		
@@ -1079,11 +1149,12 @@ function spa_check_theme_addon_update(){
 			}
 			
 			$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
-			$status_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license != 'invalid' && $check_addons_status->license != 'expired';
+			$status_condition = $check_addons_status != '' && isset($check_addons_status->license) && $check_addons_status->license == 'valid';
 			
-			if ( $update_condition && $status_condition && (version_compare((float)$check_for_addon_update->new_version, (float)$theme_data['Version'], '>') == 1)) {
+			if ( $update_condition && $status_condition && (version_compare($check_for_addon_update->new_version, $theme_data['Version'], '>') == 1)) {
 			
 				if ($header) {
+					$plugin_count++;
 					$form_action = 'update-core.php?action=do-sp-theme-upgrade';
 					?>
 					<h3><?php SP()->primitives->admin_etext('Simple:Press Themes'); ?></h3>
@@ -1138,6 +1209,7 @@ function spa_check_theme_addon_update(){
 						if ((version_compare($latest->version, $theme_data['Version'], '>') == 1)) {
 							
 							if ($header) {
+								$plugin_count++;
 								$form_action = 'update-core.php?action=do-sp-theme-upgrade';
 								?>
 								<h3><?php SP()->primitives->admin_etext('Simple:Press Themes'); ?></h3>
@@ -1202,5 +1274,20 @@ function spa_check_theme_addon_update(){
 	} else {
 		echo '<h3>'.SP()->primitives->admin_text('Simple:Press Themes').'</h3>';
 		echo '<p>'.SP()->primitives->admin_text('Your SP themes are all up to date').'</p>';
+	}
+
+	if($plugin_count > 0){
+
+		$sp_news = SP()->meta->get('news', 'news');
+		if (empty($sp_news)) {
+			$sp_news_meta = array('show' => 1, 'news' => 'There is one or more Simple:Press plugin updates available');
+			SP()->meta->add('news', 'news', $sp_news_meta);
+		}else{
+			if(!isset($sp_news[0]['meta_value']['news'])){
+				$sp_news[0]['meta_value']['show'] = 1;
+				$sp_news[0]['meta_value']['news'] = 'There is one or more Simple:Press plugin updates available';
+				SP()->meta->update('news', 'news', $sp_news[0]['meta_value'], $sp_news[0]['meta_id']);
+			}
+		}
 	}
 }

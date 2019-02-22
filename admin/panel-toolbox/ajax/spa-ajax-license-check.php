@@ -2,7 +2,7 @@
 /*
 Simple:Press Admin
 Ajax form license-check - Toolbox
-$LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
+$LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
 $Rev: 15795 $
 */
 
@@ -135,7 +135,7 @@ if(isset($_POST['sp_action']) && ($_POST['sp_action'] == 'activate_license' || $
 			}
 		}
 	
-		if ( false === $license_data->success ) {
+		if ( false === $license_data->success && $license_data->error ) {
 	
 			switch( $license_data->error ) {
 	

@@ -3,7 +3,7 @@
  * Cron Functions
  * This file loads at core level - all page loads for admin and front
  *
- * $LastChangedDate: 2018-08-15 07:59:04 -0500 (Wed, 15 Aug 2018) $
+ * $LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
  * $Rev: 15704 $
  */
 if (preg_match('#'.basename(__FILE__).'#', $_SERVER['PHP_SELF'])) die('Access denied - you cannot directly call this file');
