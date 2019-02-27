@@ -3,7 +3,7 @@
  * Core Support Functions
  * This file loads at core level - all page loads for admin and front
  *
- *  $LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
+ *  $LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
  *  $Rev: 15817 $
  */
 if (preg_match('#'.basename(__FILE__).'#', $_SERVER['PHP_SELF'])) die('Access denied - you cannot directly call this file');
@@ -861,7 +861,7 @@ function sp_ten_minutes_cron_interval( $schedules ) {
 	
     $schedules['ten_minutes'] = array(
     
-        'interval' => 60 * 2,
+        'interval' => 60 * 10,
         'display'  => esc_html__( 'Every Ten Minutes' ),
     );
  
@@ -941,6 +941,7 @@ if ( ! function_exists( 'sp_theme_updater_object' ) ) {
 function sph_check_addons_status(){
 	
 	$plugins = SP()->plugin->get_list();
+	$sp_return_update_plugins = 0;
 	
 	if (!empty($plugins)) {
 		
@@ -961,13 +962,20 @@ function sph_check_addons_status(){
 				
 				$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option, 'update_version_option'=>$update_version_option);
 				
-				$sp_plugin_updater->check_addons_status($data);	
+				$sp_return_plugin_updater = $sp_plugin_updater->check_addons_status($data);
+
+				if($sp_return_plugin_updater && isset($sp_return_plugin_updater->license) && $sp_return_plugin_updater->license === 'valid'){
+
+					$sp_return_update_plugins = 1;
+				}
+				
 			}
 		}
 	
 	}
 	
 	$themes = SP()->theme->get_list();
+	$sp_return_update_themes = 0;
 	
 	if (!empty($themes)) {
 		
@@ -988,11 +996,19 @@ function sph_check_addons_status(){
 				
 				$data = array('edd_action' => 'check_license', 'update_status_option'=>$update_status_option, 'update_info_option'=>$update_info_option, 'update_version_option'=>$update_version_option);
 				
-				$sp_theme_updater->check_addons_status($data);
+				$sp_return_theme_updater = $sp_theme_updater->check_addons_status($data);
+
+				if($sp_return_theme_updater && isset($sp_return_theme_updater->license) && $sp_return_theme_updater->license === 'valid'){
+
+					$sp_return_update_themes = 1;
+				}
 			}
 		}
 	
 	}
+
+	$return = array('sp_return_update_themes' => $sp_return_update_themes,'sp_return_update_plugins' => $sp_return_update_plugins );
+	return $return;
 }
 
 

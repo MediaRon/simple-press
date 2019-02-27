@@ -3,7 +3,7 @@
  * Admin support functions
  * Loads for all forum admin pages and provides general support functions across the admin
  *
- * $LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
+ * $LastChangedDate: 2018-11-13 20:41:56 -0600 (Tue, 13 Nov 2018) $
  * $Rev: 15817 $
  */
 if (preg_match('#'.basename(__FILE__).'#', $_SERVER['PHP_SELF'])) die('Access denied - you cannot directly call this file');

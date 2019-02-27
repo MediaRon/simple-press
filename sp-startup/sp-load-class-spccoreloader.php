@@ -9,7 +9,7 @@
  * ------------------------
  * load()
  *
- * $LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
+ * $LastChangedDate: 2018-12-03 06:28:04 -0600 (Mon, 03 Dec 2018) $
  * $Rev: 15839 $
  */
 class spcCoreLoader {

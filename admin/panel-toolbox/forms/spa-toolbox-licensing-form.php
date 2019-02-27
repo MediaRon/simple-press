@@ -2,7 +2,7 @@
 /*
 Simple:Press
 Admin Toolbox Licensing Form
-$LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
+$LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
 $Rev: 15601 $
 */
 
@@ -288,6 +288,22 @@ function spa_toolbox_licensing_form() {
 		echo '</table>';	
 	}
 	
+	spa_paint_close_fieldset();
+	spa_paint_close_panel();
+	
+	spa_paint_open_panel();
+	spa_paint_open_fieldset(SP()->primitives->admin_text('Force an Update Check'), true, 'force-update-check');
+	echo '<div class="sfoptionerror" style="margin-left: 0px;">Note: If you want to check for any updates available then click below button.</div>';
+	echo '<div class="sfform-submit-bar" style="margin-bottom: 6px;">';
+	if($count_themes <1 && $count_plugins <1){
+
+		echo '<input type="button" class="button-primary" disabled = "disabled" name="force_update_check" value="Check Update Now">';
+	}else{
+
+		echo '<input type="button" class="button-primary" id="force_update_check" name="force_update_check" value="Check Update Now">';
+	}
+	
+	echo '</div>';
 	spa_paint_close_fieldset();
 	spa_paint_close_panel();
 	

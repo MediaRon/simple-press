@@ -154,6 +154,8 @@ class SPPluginUpdater {
 				
 				// save update_version_option to option table
 				SP()->options->update( $data['update_version_option'], json_encode($update_version_option) );
+
+				return $license_data;
 			}
 		}
 	}

@@ -2,7 +2,7 @@
 /*
 Simple:Press Admin
 Ajax form license-check - Toolbox
-$LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
+$LastChangedDate: 2019-01-30 16:40:00 -0600 (Wed, 30 Jan 2019) $
 $Rev: 15795 $
 */
 
@@ -206,6 +206,23 @@ if(isset($_POST['changelog_link']) && $_POST['changelog_link'] != ''){
     
     $message =  '<div class="sfhelptext"><iframe src="'.$_POST['changelog_link'].'" height="700" width="100%"></iframe><div class="sfhelptextlogo"><img src="'.SPCOMMONIMAGES.'sp-mini-logo.png" alt="" title="" /></div></div>';
     
+    $result = array('message'=>$message);
+	
+    echo json_encode($result);
+}
+
+if(isset($_POST['sp_action']) && $_POST['sp_action'] == 'force_update_check'){
+    
+    $sph_check_addons_status = sph_check_addons_status();
+
+    if($sph_check_addons_status['sp_return_update_themes'] == 1 ||  $sph_check_addons_status['sp_return_update_plugins']){
+
+    	$message =  'Plugins update checked Successfully! Go to the Dashboard > Updates Page and update the necessary plugins';
+    }else{
+
+    	$message =  'No valid license found for Plugins!';
+    }
+
     $result = array('message'=>$message);
 	
     echo json_encode($result);

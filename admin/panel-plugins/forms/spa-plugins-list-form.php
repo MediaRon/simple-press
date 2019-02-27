@@ -2,7 +2,7 @@
 /*
 Simple:Press
 Admin plugins list
-$LastChangedDate: 2019-02-22 09:48:50 -0700 (Fri, 22 Feb 2019) $
+$LastChangedDate: 2017-12-28 11:37:41 -0600 (Thu, 28 Dec 2017) $
 $Rev: 15601 $
 */
 
@@ -235,7 +235,7 @@ function spa_plugins_list_form() {
 				$update_condition = $check_for_addon_update != '' && isset($check_for_addon_update->new_version) && $check_for_addon_update->new_version != false;
 				$status_condition = $check_addons_status != '' && isset($check_addons_status->license);
 
-				$version_compare = (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1);
+				$version_compare = isset($check_for_addon_update->new_version) && (version_compare($check_for_addon_update->new_version, $plugin_data['Version'], '>') == 1);
                                 
                                 
 				
