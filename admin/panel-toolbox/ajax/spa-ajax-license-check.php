@@ -106,7 +106,7 @@ if(isset($_POST['sp_action']) && ($_POST['sp_action'] == 'activate_license' || $
 			
 		} else {
 			
-			$message = 'An error occurred, please try again.';
+			$message = SP()->primitives->admin_text('An error occurred, please try again.');
 		}
 	
 	} else {
@@ -123,7 +123,7 @@ if(isset($_POST['sp_action']) && ($_POST['sp_action'] == 'activate_license' || $
 				// delete info from option table
 				SP()->options->delete( $update_info_option );
 				
-				$message = __( 'Your license key is deactivated.' );
+				$message = SP()->primitives->admin_text('Your license key is deactivated.' );
 				
 			}else{
 				
@@ -149,18 +149,18 @@ if(isset($_POST['sp_action']) && ($_POST['sp_action'] == 'activate_license' || $
 	
 				case 'revoked' :
 	
-					$message = __( 'Your license key has been disabled.' );
+					$message = SP()->primitives->admin_text('Your license key has been disabled.' );
 					break;
 	
 				case 'missing' :
 	
-					$message = __( 'Plugin license is invalid. Please be sure you have entered right plugin license key.' );
+					$message = SP()->primitives->admin_text('Plugin license is invalid. Please be sure you have entered right plugin license key.' );
 					break;
 	
 				case 'invalid' :
 				case 'site_inactive' :
 	
-					$message = __( 'Your license is not active for this URL.' );
+					$message = SP()->primitives->admin_text('Your license is not active for this URL.' );
 					break;
 	
 				case 'item_name_mismatch' :
@@ -170,12 +170,12 @@ if(isset($_POST['sp_action']) && ($_POST['sp_action'] == 'activate_license' || $
 	
 				case 'no_activations_left':
 	
-					$message = __( 'Your license key has reached its activation limit.' );
+					$message = SP()->primitives->admin_text('Your license key has reached its activation limit.' );
 					break;
 	
 				default :
 	
-					$message = __( 'An error occurred, please try again.' );
+					$message = SP()->primitives->admin_text('An error occurred, please try again.' );
 					break;
 			}
 		}
@@ -184,10 +184,10 @@ if(isset($_POST['sp_action']) && ($_POST['sp_action'] == 'activate_license' || $
 	
 	if(!isset($message) && $_POST['sp_action'] == 'activate_license'){
 		
-		$message = 'License successfully Activated. Thank you.';
+		$message = SP()->primitives->admin_text('License successfully Activated. Thank you.');
 	}
 	
-	$result = array('message'=>$message, 'sp_item' => $_POST['sp_item']);
+	$result = array('message'=> isset($message) ? $message : '', 'sp_item' => $_POST['sp_item']);
 	
 	echo json_encode($result);
 	
@@ -195,7 +195,7 @@ if(isset($_POST['sp_action']) && ($_POST['sp_action'] == 'activate_license' || $
 	
 	SP()->options->update('sp_addon_store_url', $_POST['sp_sample_store_url']);
 	
-	$message = 'Updated option Successfully.';
+	$message = SP()->primitives->admin_text('Updated option Successfully.');
 	
 	$result = array('message'=>$message);
 	
@@ -217,10 +217,10 @@ if(isset($_POST['sp_action']) && $_POST['sp_action'] == 'force_update_check'){
 
     if($sph_check_addons_status['sp_return_update_themes'] == 1 ||  $sph_check_addons_status['sp_return_update_plugins']){
 
-    	$message =  'Plugins update checked Successfully! Go to the Dashboard > Updates Page and update the necessary plugins';
+    	$message =  SP()->primitives->admin_text('Plugins update checked Successfully! Go to the Dashboard > Updates Page and update the necessary plugins');
     }else{
 
-    	$message =  'No valid license found for Plugins!';
+    	$message =  SP()->primitives->admin_text('No valid license found for Plugins!');
     }
 
     $result = array('message'=>$message);

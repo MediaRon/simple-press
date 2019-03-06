@@ -29,7 +29,7 @@ function spa_themes_list_form() {
 
 	spa_paint_open_fieldset(SP()->primitives->admin_text('Theme Management'), true, 'themes');
         
-        $ajaxURThem = wp_nonce_url(SPAJAXURL.'license-check', 'license-check');
+    $ajaxURThem = wp_nonce_url(SPAJAXURL.'license-check', 'license-check');
 ?>
 	<h3><?php echo SP()->primitives->admin_text('Current Theme'); ?></h3>
 	<div class="theme-browser rendered">
@@ -136,25 +136,24 @@ function spa_themes_list_form() {
 					
 					if($check_addons_status->license == 'valid'){
 						
-						printf(
-							__( '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%5$s" data-label="Simple:Press Theme Update" data-href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</div></div>', 'SP' ),
-							esc_html( esc_attr($curTheme['theme']) ),
-							esc_url( $changelog_link ),
-							esc_html( $check_for_addon_update->new_version ),
-							esc_url( self_admin_url('update-core.php') ),
-                            esc_html( $ajaxURThem )
-						);
+						echo '<p class="plugin-update-tr"><p class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';	
+						echo SP()->primitives->admin_text('There is an update for the ').' '.esc_attr($curTheme['theme']).' '.SP()->primitives->admin_text('theme').'.<br />';
+						echo SP()->primitives->admin_text('Version').' '.$check_for_addon_update->new_version.' '.SP()->primitives->admin_text('of the theme is available').'.<br />';
+						echo SP()->primitives->admin_text('This newer version requires at least Simple:Press version').' '.$required[$curTheme['theme']].'.<br />';
+						echo '<a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="'.$ajaxURThem.'" data-label="Simple:Press Plugin Update" data-href="'.esc_url( $changelog_link ).'">'.SP()->primitives->admin_text('View version ').$check_for_addon_update->new_version.SP()->primitives->admin_text(' details').'</a> '.SP()->primitives->admin_text('or').' ';
+						echo '<a href="'.self_admin_url('update-core.php').'" title="'.SP()->primitives->admin_text('update now').'">'.SP()->primitives->admin_text('update now').'</a>.';
+						echo '</p></p>';
 						
-					} else{
-						
-						printf(
-							__( '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%4$s" data-label="Simple:Press Theme Update" data-href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</div></div>', 'SP' ),
-							esc_html( esc_attr($curTheme['theme']) ),
-							esc_url( $changelog_link ),
-							esc_html( $check_for_addon_update->new_version ),
-                            esc_html( $ajaxURThem )
-						);
-					}
+    				} else{
+    					
+						echo '<p class="plugin-update-tr"><p class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';
+						echo SP()->primitives->admin_text('There is an update for the ').' '.esc_attr($curTheme['theme']).' '.SP()->primitives->admin_text('theme').'.<br />';
+						echo SP()->primitives->admin_text('Version').' '.$check_for_addon_update->new_version.' '.SP()->primitives->admin_text('of the theme is available').'.<br />';
+						echo SP()->primitives->admin_text('This newer version requires at least Simple:Press version').' '.$required[$curTheme['theme']].'.<br />';
+						echo '<a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="'.$ajaxURThem.'" data-label="Simple:Press Plugin Update" data-href="'.esc_url( $changelog_link ).'">'.SP()->primitives->admin_text('View version ').$check_for_addon_update->new_version.SP()->primitives->admin_text(' details').'</a>';
+						echo ' Automatic update is unavailable for this theme.';
+						echo '</p></p>';
+    				}
 				}
 				
 			}else{
@@ -289,30 +288,27 @@ function spa_themes_list_form() {
 							$changelog_link = add_query_arg( array( 'tab' => 'plugin-information', 'plugin' => $sp_theme_name, 'section' => 'changelog', 'TB_iframe' => true, 'width' => 722, 'height' => 949 ), admin_url( 'plugin-install.php' ) );
 							
 							echo '<br />';
-							echo '<div class="plugin-update-tr"><div class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';
 							
 							if($check_addons_status->license == 'valid'){
 								
-	        					printf(
-									__( '<p>There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%5$s" data-label="Simple:Press Theme Update" data-href="%2$s">View version %3$s details</a> or <a href="%4$s">update now</a>.</p>', 'SP' ),
-									esc_html( $theme_data['Name'] ),
-									esc_url( $changelog_link ),
-									esc_html( $check_for_addon_update->new_version ),
-									esc_url( self_admin_url('update-core.php') ),
-									esc_html( $ajaxURThem )
-								);
+								echo '<p class="plugin-update-tr"><p class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';
+								echo SP()->primitives->admin_text('There is an update for the ').' '.$theme_data['Name'].' '.SP()->primitives->admin_text('theme').'.<br />';
+								echo SP()->primitives->admin_text('Version').' '.$check_for_addon_update->new_version.' '.SP()->primitives->admin_text('of the theme is available').'.<br />';
+								echo SP()->primitives->admin_text('This newer version requires at least Simple:Press version').' '.$required[$theme_data['Name']].'.<br />';
+								echo '<a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="'.$ajaxURThem.'" data-label="Simple:Press Plugin Update" data-href="'.esc_url( $changelog_link ).'">'.SP()->primitives->admin_text('View version ').$check_for_addon_update->new_version.SP()->primitives->admin_text(' details').'</a> '.SP()->primitives->admin_text('or').' ';
+								echo '<a href="'.self_admin_url('update-core.php').'" title="'.SP()->primitives->admin_text('update now').'">'.SP()->primitives->admin_text('update now').'</a>.';
+								echo '</p></p>';
 								
 	        				} else{
 	        					
-	        					printf(
-									__( '<p>There is a new version of %1$s available. <a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="%4$s" data-label="Simple:Press Theme Update" data-href="%2$s">View version %3$s details</a> Automatic update is unavailable for this theme.</p>', 'SP' ),
-									esc_html( $theme_data['Name'] ),
-									esc_url( $changelog_link ),
-									esc_html( $check_for_addon_update->new_version ),
-									esc_html( $ajaxURThem )
-								);
+								echo '<p class="plugin-update-tr"><p class="update-message notice inline notice-warning notice-alt" style="padding: 10px 0px;">';
+								echo SP()->primitives->admin_text('There is an update for the ').' '.$theme_data['Name'].' '.SP()->primitives->admin_text('theme').'.<br />';
+								echo SP()->primitives->admin_text('Version').' '.$check_for_addon_update->new_version.' '.SP()->primitives->admin_text('of the theme is available').'.<br />';
+								echo SP()->primitives->admin_text('This newer version requires at least Simple:Press version').' '.$required[$theme_data['Name']].'.<br />';
+								echo '<a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="'.$ajaxURThem.'" data-label="Simple:Press Plugin Update" data-href="'.esc_url( $changelog_link ).'">'.SP()->primitives->admin_text('View version ').$check_for_addon_update->new_version.SP()->primitives->admin_text(' details').'</a>';
+								echo ' Automatic update is unavailable for this theme.';
+								echo '</p></p>';
 	        				}
-							echo '</div></div>';
 						}
 						
 					}else{
