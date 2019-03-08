@@ -264,8 +264,7 @@ function spa_plugins_list_form() {
 													echo SP()->primitives->admin_text('Version').' '.$check_for_addon_update->new_version.' '.SP()->primitives->admin_text('of the plugin is available').'.<br />';
 													echo SP()->primitives->admin_text('This newer version requires at least Simple:Press version').' '.$required[$plugin_data['Name']].'.<br />';
 													echo '<a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="'.$ajaxURThem.'" data-label="Simple:Press Plugin Update" data-href="'.esc_url( $changelog_link ).'">'.SP()->primitives->admin_text('View version ').$check_for_addon_update->new_version.SP()->primitives->admin_text(' details').'</a>';
-													echo ' Automatic update is unavailable for this plugin.';
-
+													echo SP()->primitives->admin_text(' Automatic update is unavailable for this plugin.');
                                              } ?>
                                         </div>
                                     </td>
@@ -285,7 +284,7 @@ function spa_plugins_list_form() {
 								<?php echo SP()->primitives->admin_text('Version').' '.$versions[$plugin_data['Name']].' '.SP()->primitives->admin_text('of the plugin is available').'.<br />'; ?>
 								<?php echo SP()->primitives->admin_text('This newer version requires at least Simple:Press version').' '.$required[$plugin_data['Name']].'.<br />'; ?>
 								<?php echo SP()->primitives->admin_text('For details, please visit').' '.SPPLUGHOME.' '.SP()->primitives->admin_text('or').' ' ?>
-								<?php echo '<a href="'.self_admin_url('update-core.php').'" title="">'.SP()->primitives->admin_text('update now').'</a>.'; ?>
+								<?php echo '<a href="'.self_admin_url('update-core.php').'" title="Simple:Press Plugin Update">'.SP()->primitives->admin_text('update now').'</a>.'; ?>
 							</div>
 						</td>
 					</tr>

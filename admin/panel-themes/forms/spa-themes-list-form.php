@@ -151,7 +151,7 @@ function spa_themes_list_form() {
 						echo SP()->primitives->admin_text('Version').' '.$check_for_addon_update->new_version.' '.SP()->primitives->admin_text('of the theme is available').'.<br />';
 						echo SP()->primitives->admin_text('This newer version requires at least Simple:Press version').' '.$required[$curTheme['theme']].'.<br />';
 						echo '<a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="'.$ajaxURThem.'" data-label="Simple:Press Plugin Update" data-href="'.esc_url( $changelog_link ).'">'.SP()->primitives->admin_text('View version ').$check_for_addon_update->new_version.SP()->primitives->admin_text(' details').'</a>';
-						echo ' Automatic update is unavailable for this theme.';
+						echo SP()->primitives->admin_text(' Automatic update is unavailable for this theme.');
 						echo '</p></p>';
     				}
 				}
@@ -168,7 +168,7 @@ function spa_themes_list_form() {
 	    						echo '<strong>'.SP()->primitives->admin_text('There is an update for the').' '.$themes[$curTheme['theme']]['Name'].' '.SP()->primitives->admin_text('theme').'.</strong> ';
 	    						echo SP()->primitives->admin_text('Version').' '.$latest->version.' '.SP()->primitives->admin_text('is available').'. ';
 	    						echo SP()->primitives->admin_text('For details and to download please visit').' '.SPPLUGHOME.' '.SP()->primitives->admin_text('or').' '.SP()->primitives->admin_text('go to the').' ';
-	    						echo '<a href="'.self_admin_url('update-core.php').'" title="" target="_parent">'.SP()->primitives->admin_text('WordPress updates page').'</a>';
+	    						echo '<a href="'.self_admin_url('update-core.php').'" title="Simple:Press Plugin Update" target="_parent">'.SP()->primitives->admin_text('WordPress updates page').'</a>';
 	    						echo '</p>';
 	    					}
 	    					break;
@@ -306,7 +306,7 @@ function spa_themes_list_form() {
 								echo SP()->primitives->admin_text('Version').' '.$check_for_addon_update->new_version.' '.SP()->primitives->admin_text('of the theme is available').'.<br />';
 								echo SP()->primitives->admin_text('This newer version requires at least Simple:Press version').' '.$required[$theme_data['Name']].'.<br />';
 								echo '<a class="thickbox open-plugin-details-modal spPluginUpdate" data-width="1000" data-height="0" data-site="'.$ajaxURThem.'" data-label="Simple:Press Plugin Update" data-href="'.esc_url( $changelog_link ).'">'.SP()->primitives->admin_text('View version ').$check_for_addon_update->new_version.SP()->primitives->admin_text(' details').'</a>';
-								echo ' Automatic update is unavailable for this theme.';
+								echo SP()->primitives->admin_text(' Automatic update is unavailable for this theme.');
 								echo '</p></p>';
 	        				}
 						}
@@ -323,7 +323,7 @@ function spa_themes_list_form() {
 										echo '<strong>'.SP()->primitives->admin_text('There is an update for the').' '.$theme_data['Name'].' '.SP()->primitives->admin_text('theme').'.</strong> ';
 										echo SP()->primitives->admin_text('Version').' '.$latest->version.' '.SP()->primitives->admin_text('is available').'. ';
 										echo SP()->primitives->admin_text('For details and to download please visit').' '.SPPLUGHOME.' '.SP()->primitives->admin_text('or').' '.SP()->primitives->admin_text('go to the').' ';
-										echo '<a href="'.self_admin_url('update-core.php').'" title="" target="_parent">'.SP()->primitives->admin_text('WordPress updates page').'</a>';
+										echo '<a href="'.self_admin_url('update-core.php').'" title="Simple:Press Plugin Update" target="_parent">'.SP()->primitives->admin_text('WordPress updates page').'</a>';
 										echo '</div></div>';
 									}
 									break;
