@@ -22,9 +22,11 @@ function spa_toolbox_licensing_form() {
 	spa_paint_options_init();
 	spa_paint_open_tab(SP()->primitives->admin_text('Toolbox').' - '.SP()->primitives->admin_text('Licensing'), true);
 	
+	# Plugins Licensing
+	
 	spa_paint_open_panel();
 	spa_paint_open_fieldset(SP()->primitives->admin_text('Plugins Licensing'), true, 'plugins-licensing');
-	
+
 	foreach ($plugins as $plugin_file => $plugin_data) {
 		
 		$is_active = SP()->plugin->is_active($plugin_file);
@@ -171,6 +173,9 @@ function spa_toolbox_licensing_form() {
 	spa_paint_close_fieldset();
 	spa_paint_close_panel();
 	
+
+	# Themes Licensing
+
 	spa_paint_open_panel();
 	spa_paint_open_fieldset(SP()->primitives->admin_text('Themes Licensing'), true, 'themes-licensing');
 	
